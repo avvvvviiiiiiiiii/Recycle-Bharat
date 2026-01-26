@@ -1,19 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
-import api from '../services/api';
+import api from '../api/axios';
 
 export const useStats = () => {
     const { data: stats, isLoading, error } = useQuery({
-        queryKey: ['system-stats'],
+        queryKey: ['govt-stats'],
         queryFn: async () => {
-            const res = await api.get('/stats');
+            const res = await api.get('/analytics/overview');
             return res.data;
         },
-        refetchInterval: 30000, // Refresh every 30 seconds
     });
 
     return {
         stats,
         isLoading,
-        error,
+        error
     };
 };

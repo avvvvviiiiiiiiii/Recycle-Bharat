@@ -1,0 +1,413 @@
+Excellent. This is the **final backbone artifact**. After this, your system is no longer “designed” — it is **buildable**.
+
+I’ll give you a **complete, detailed API contract list**, structured so that:
+
+* Every API maps to **one business capability**
+* Every mutation maps to **one FSM transition**
+* RBAC is unambiguous
+* Developers + AI agents can work in parallel
+* No “god endpoints” exist
+
+This is **production-style**, not toy REST.
+
+---
+
+# 🌐 GLOBAL API CONVENTIONS
+
+**Base Path**
+
+```
+/api/v1
+```
+
+**Auth Header**
+
+```
+Authorization: Bearer <JWT>
+```
+
+**JWT Claims**
+
+```json
+{
+  "user_id": "uuid",
+  "role": "CITIZEN | COLLECTOR | RECYCLER | GOVT | ADMIN"
+}
+```
+
+**Common Error Format**
+
+```json
+{
+  "error_code": "FSM_VIOLATION",
+  "message": "Invalid lifecycle transition",
+  "request_id": "uuid"
+}
+```
+
+---
+
+# 🧑 CITIZEN APIs
+
+## 1. Register Device
+
+**POST** `/devices`
+
+**Role:** CITIZEN
+
+**Request**
+
+```json
+{
+  "device_uid": "IMEI-12345",
+  "device_type": "Mobile Phone",
+  "uid_origin": "MANUFACTURER"
+}
+```
+
+**Response – 201**
+
+```json
+{
+  "device_id": "uuid",
+  "current_state": "ACTIVE",
+  "created_at": "ISO-8601"
+}
+```
+
+**Errors**
+
+* 409 DEVICE_UID_EXISTS
+* 403 FORBIDDEN_ROLE
+
+---
+
+## 2. List My Devices
+
+**GET** `/devices`
+
+**Role:** CITIZEN
+
+**Response – 200**
+
+```json
+[
+  {
+    "device_id": "uuid",
+    "device_uid": "IMEI-12345",
+    "device_type": "Mobile Phone",
+    "current_state": "ACTIVE"
+  }
+]
+```
+
+---
+
+## 3. View Device Timeline
+
+**GET** `/devices/{deviceId}/timeline`
+
+**Role:** CITIZEN (owner)
+
+**Response – 200**
+
+```json
+[
+  {
+    "previous_state": "ACTIVE",
+    "new_state": "RECYCLING_REQUESTED",
+    "actor_role": "CITIZEN",
+    "timestamp": "ISO-8601"
+  }
+]
+```
+
+---
+
+## 4. Request Recycling
+
+**POST** `/devices/{deviceId}/recycle`
+
+**FSM:** ACTIVE → RECYCLING_REQUESTED
+
+**Role:** CITIZEN
+
+**Response – 200**
+
+```json
+{
+  "device_id": "uuid",
+  "new_state": "RECYCLING_REQUESTED"
+}
+```
+
+---
+
+## 5. Cancel Recycling (Limited)
+
+**DELETE** `/devices/{deviceId}/recycle`
+
+**FSM:** RECYCLING_REQUESTED → ACTIVE
+
+**Role:** CITIZEN
+
+**Errors**
+
+* 400 STATE_LOCKED
+
+---
+
+# ♻️ RECYCLER APIs
+
+## 6. View Incoming Requests
+
+**GET** `/recycling/requests`
+
+**Role:** RECYCLER
+
+**Response – 200**
+
+```json
+[
+  {
+    "request_id": "uuid",
+    "device_id": "uuid",
+    "citizen_id": "uuid",
+    "requested_at": "ISO-8601"
+  }
+]
+```
+
+---
+
+## 7. Assign Collector
+
+**POST** `/recycling/requests/{requestId}/assign`
+
+**FSM:** RECYCLING_REQUESTED → COLLECTOR_ASSIGNED
+
+**Role:** RECYCLER
+
+**Request**
+
+```json
+{
+  "collector_id": "uuid"
+}
+```
+
+**Response – 200**
+
+```json
+{
+  "request_id": "uuid",
+  "collector_id": "uuid",
+  "new_state": "COLLECTOR_ASSIGNED"
+}
+```
+
+---
+
+## 8. Mark Device Recycled
+
+**POST** `/devices/{deviceId}/recycled`
+
+**FSM:** DELIVERED_TO_RECYCLER → RECYCLED
+
+**Role:** RECYCLER
+
+**Response – 200**
+
+```json
+{
+  "device_id": "uuid",
+  "new_state": "RECYCLED",
+  "incentive_issued": true
+}
+```
+
+---
+
+# 🚚 COLLECTOR APIs
+
+## 9. View Assigned Pickups
+
+**GET** `/collector/assignments`
+
+**Role:** COLLECTOR
+
+**Response – 200**
+
+```json
+[
+  {
+    "assignment_id": "uuid",
+    "device_id": "uuid",
+    "pickup_location": "masked",
+    "assigned_at": "ISO-8601"
+  }
+]
+```
+
+---
+
+## 10. Confirm Pickup
+
+**POST** `/collector/assignments/{assignmentId}/pickup`
+
+**FSM:** COLLECTOR_ASSIGNED → COLLECTED
+
+**Response – 200**
+
+```json
+{
+  "assignment_id": "uuid",
+  "new_state": "COLLECTED"
+}
+```
+
+---
+
+## 11. Confirm Delivery
+
+**POST** `/collector/assignments/{assignmentId}/deliver`
+
+**FSM:** COLLECTED → DELIVERED_TO_RECYCLER
+
+**Response – 200**
+
+```json
+{
+  "assignment_id": "uuid",
+  "new_state": "DELIVERED_TO_RECYCLER"
+}
+```
+
+---
+
+# 🏛️ GOVERNMENT APIs (READ-ONLY)
+
+## 12. System Summary
+
+**GET** `/gov/analytics/summary`
+
+**Role:** GOVT
+
+**Response – 200**
+
+```json
+{
+  "total_devices": 120000,
+  "recycling_requests": 60000,
+  "completed_recycling": 45000,
+  "completion_rate": 0.75
+}
+```
+
+---
+
+## 13. Region-wise Metrics
+
+**GET** `/gov/analytics/regions`
+
+**Response – 200**
+
+```json
+[
+  {
+    "region": "Delhi",
+    "devices_registered": 20000,
+    "recycled": 8000
+  }
+]
+```
+
+---
+
+# 🔧 ADMIN APIs (EXCEPTIONAL)
+
+## 14. Override Device State
+
+**POST** `/admin/devices/{deviceId}/override`
+
+**Role:** ADMIN
+
+**Request**
+
+```json
+{
+  "target_state": "DISPUTE_PENDING",
+  "reason": "Collector-recycler mismatch"
+}
+```
+
+**Response – 200**
+
+```json
+{
+  "device_id": "uuid",
+  "new_state": "DISPUTE_PENDING"
+}
+```
+
+---
+
+## 15. View Admin Audit Logs
+
+**GET** `/admin/audit-logs`
+
+**Role:** ADMIN
+
+---
+
+# 🔔 INTERNAL EVENT CONTRACT
+
+### Event: `DEVICE_LIFECYCLE_CHANGED`
+
+```json
+{
+  "event_id": "uuid",
+  "device_id": "uuid",
+  "previous_state": "COLLECTED",
+  "new_state": "DELIVERED_TO_RECYCLER",
+  "actor_id": "uuid",
+  "actor_role": "COLLECTOR",
+  "occurred_at": "ISO-8601"
+}
+```
+
+---
+
+# 🧠 WHY THIS CONTRACT SET IS CORRECT
+
+• No generic “update” APIs
+• Every mutation = one FSM transition
+• RBAC is enforced by design
+• Easy to test, mock, and simulate
+• Kafka fits naturally
+• AI agents can reason about flows
+• Developers won’t accidentally break invariants
+
+This is **how serious backend systems are exposed**.
+
+---
+
+## Final mentor note
+
+At this point, you have:
+
+* Architecture ✔️
+* FSM ✔️
+* RBAC ✔️
+* Database ✔️
+* API Contracts ✔️
+
+You’ve crossed from **idea → executable system**.
+
+Next logical steps (pick one):
+1️⃣ OpenAPI (Swagger) spec
+2️⃣ Sequence diagrams (happy + failure)
+3️⃣ Backend service boundaries
+4️⃣ Idempotency & retry strategy
+
+You’re thinking like an engineer now — not just designing diagrams.

@@ -18,7 +18,7 @@ export default function CitizenLayout() {
             <aside className="w-64 border-r border-border bg-card/30 hidden md:flex flex-col">
                 <div className="p-6">
                     <h2 className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
-                        My Passport
+                        My Profile
                     </h2>
                     <p className="text-xs text-muted-foreground mt-1">Citizen Portal</p>
                 </div>
@@ -55,7 +55,7 @@ export default function CitizenLayout() {
             <main className="flex-1 overflow-auto relative">
                 {/* Mobile Header (Hidden on Desktop) */}
                 <header className="h-16 border-b border-border flex items-center px-4 md:hidden bg-background/80 backdrop-blur-md sticky top-0 z-10">
-                    <span className="font-bold">E-Waste Passport</span>
+                    <span className="font-bold">Recycle Bharat</span>
                 </header>
 
                 <div className="p-6 md:p-8 max-w-7xl mx-auto">

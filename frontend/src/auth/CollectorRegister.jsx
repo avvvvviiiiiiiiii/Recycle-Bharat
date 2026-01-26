@@ -25,8 +25,8 @@ export default function CollectorRegister() {
             await api.post('/auth/register', {
                 email: formData.email,
                 password: formData.password,
-                role: 'collector',
-                displayName: formData.fullName,
+                role: 'COLLECTOR',
+                full_name: formData.fullName,
                 organization: formData.vehicleDetails
             });
             navigate('/login');

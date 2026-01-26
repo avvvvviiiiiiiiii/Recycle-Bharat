@@ -171,10 +171,12 @@ export default function RequestDetails() {
                     <div className="p-8 bg-slate-950/50 rounded-3xl border border-white/10 flex flex-col items-center gap-6">
                         <div className="w-full max-w-xs space-y-4">
                             <div className="flex justify-between items-center px-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Enter Handover DUC</label>
+                                <label htmlFor="duc_input" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Enter Handover DUC</label>
                                 {verificationError && <span className="text-[10px] text-red-500 font-bold uppercase">{verificationError}</span>}
                             </div>
                             <input
+                                id="duc_input"
+                                name="duc_input"
                                 type="text"
                                 maxLength={6}
                                 value={duc}

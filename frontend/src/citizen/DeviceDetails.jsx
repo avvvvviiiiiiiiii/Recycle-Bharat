@@ -91,7 +91,7 @@ export default function DeviceDetails() {
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Digital Passport Status</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Device Status</span>
                         <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-sm shadow-lg ${device.status === 'RECYCLED' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
                             device.status === 'ACTIVE' ? 'bg-white/5 text-white border border-white/10' :
                                 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
@@ -187,7 +187,7 @@ export default function DeviceDetails() {
                                 onClick={handleReveal}
                                 disabled={isRevealing || device.isTerminated || device.status === 'ACTIVE'}
                                 className={`w-full h-12 rounded-2xl font-bold text-sm transition-all shadow-xl ${device.status === 'ACTIVE' ? 'bg-slate-800/50 text-slate-600' :
-                                        (revealedDuc || device.currentDuc) ? 'bg-slate-800 hover:bg-slate-700' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/40'
+                                    (revealedDuc || device.currentDuc) ? 'bg-slate-800 hover:bg-slate-700' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/40'
                                     }`}
                             >
                                 {isRevealing ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : ((revealedDuc || device.currentDuc) ? <RefreshCw className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />)}
@@ -202,7 +202,7 @@ export default function DeviceDetails() {
                         </p>
                     </div>
 
-                    {/* Actions Card */}
+                    {/* Actions Card with Modal */}
                     {device.status === 'ACTIVE' && (
                         <div className="bg-emerald-600/10 border border-emerald-500/20 rounded-3xl p-8 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-500">
                             <div className="space-y-2 text-center">
@@ -210,15 +210,11 @@ export default function DeviceDetails() {
                                 <p className="text-xs text-slate-400">Request an authorized recycling unit to pick up your device.</p>
                             </div>
 
-                            <Button
-                                onClick={() => requestRecycle(device._id)}
-                                disabled={isRecycling}
-                                variant="premium"
-                                className="w-full h-12 rounded-2xl font-black shadow-emerald-900/40"
-                            >
-                                {isRecycling ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <Recycle className="w-4 h-4 mr-2" />}
-                                CALL FOR RECYCLING
-                            </Button>
+                            <RecycleDialog
+                                deviceId={device._id}
+                                onConfirm={(data) => requestRecycle({ deviceId: device._id, ...data })}
+                                isLoading={isRecycling}
+                            />
                         </div>
                     )}
 
@@ -240,3 +236,69 @@ export default function DeviceDetails() {
         </div>
     );
 }
+
+const RecycleDialog = ({ deviceId, onConfirm, isLoading }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [address, setAddress] = useState('');
+    const [date, setDate] = useState('');
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onConfirm({
+            pickup_address: address,
+            preferred_date: date,
+            pickup_latitude: 12.9716, // Mock for now 
+            pickup_longitude: 77.5946
+        });
+        setIsOpen(false);
+    };
+
+    if (!isOpen) return (
+        <Button
+            onClick={() => setIsOpen(true)}
+            className='w-full h-12 rounded-2xl font-black shadow-emerald-900/40 bg-emerald-600 hover:bg-emerald-500 text-white'
+        >
+            <Recycle className='w-4 h-4 mr-2' />
+            CALL FOR RECYCLING
+        </Button>
+    );
+
+    return (
+        <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200'>
+            <div className='bg-slate-900 border border-slate-700 p-6 rounded-2xl w-full max-w-md space-y-4'>
+                <h3 className='text-xl font-bold text-white'>Confirm Pickup Details</h3>
+                <form onSubmit={handleSubmit} className='space-y-4'>
+                    <div>
+                        <label htmlFor="pickup_address_input" className='text-sm text-slate-400'>Pickup Address</label>
+                        <textarea
+                            id="pickup_address_input"
+                            name="pickup_address_input"
+                            required
+                            className='w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white mt-1'
+                            value={address}
+                            onChange={e => setAddress(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="pickup_date_input" className='text-sm text-slate-400'>Preferred Date</label>
+                        <input
+                            id="pickup_date_input"
+                            name="pickup_date_input"
+                            type='date'
+                            required
+                            className='w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white mt-1'
+                            value={date}
+                            onChange={e => setDate(e.target.value)}
+                        />
+                    </div>
+                    <div className='flex gap-3 pt-2'>
+                        <Button type='button' variant='ghost' onClick={() => setIsOpen(false)} className='flex-1 text-slate-400'>Cancel</Button>
+                        <Button type='submit' disabled={isLoading} className='flex-1 bg-emerald-600 hover:bg-emerald-500 text-white'>
+                            {isLoading ? 'Processing...' : 'Confirm Request'}
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};

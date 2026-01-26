@@ -97,7 +97,7 @@ export default function CitizenProfile() {
                             </div>
                             <div className="flex items-center gap-2 text-slate-400 text-xs font-bold bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
                                 <Shield size={14} className="text-emerald-500" />
-                                Verified Passport
+                                Verified Account
                             </div>
                         </div>
                     </div>
@@ -122,8 +122,8 @@ export default function CitizenProfile() {
                             key={s.id}
                             onClick={() => setActiveSection(s.id)}
                             className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${activeSection === s.id
-                                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 translate-x-1'
-                                    : 'text-slate-500 hover:bg-white/5 hover:text-white'
+                                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 translate-x-1'
+                                : 'text-slate-500 hover:bg-white/5 hover:text-white'
                                 }`}
                         >
                             <s.icon size={18} />
@@ -151,7 +151,7 @@ export default function CitizenProfile() {
                                     <p className="text-2xl font-black text-white">{profile?.displayName || 'Citizen'}</p>
                                 </div>
                                 <div className="p-6 bg-white/5 border border-white/5 rounded-3xl space-y-2">
-                                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Passport ID</p>
+                                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">User ID</p>
                                     <p className="text-lg font-mono font-bold text-white uppercase">{profile?._id.slice(-12)}</p>
                                 </div>
                             </div>
@@ -167,9 +167,11 @@ export default function CitizenProfile() {
 
                             <div className="space-y-4 max-w-md">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Current Password</label>
+                                    <label htmlFor="currentPassword" className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Current Password</label>
                                     <div className="relative">
                                         <input
+                                            id="currentPassword"
+                                            name="currentPassword"
                                             type={showPasswords ? 'text' : 'password'}
                                             required
                                             value={passwordData.current}
@@ -183,8 +185,10 @@ export default function CitizenProfile() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">New Password</label>
+                                    <label htmlFor="newPassword" className="text-[10px] font-black text-slate-500 uppercase tracking-widest">New Password</label>
                                     <input
+                                        id="newPassword"
+                                        name="newPassword"
                                         type={showPasswords ? 'text' : 'password'}
                                         required
                                         value={passwordData.new}
@@ -194,8 +198,10 @@ export default function CitizenProfile() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Confirm New Password</label>
+                                    <label htmlFor="confirmPassword" className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Confirm New Password</label>
                                     <input
+                                        id="confirmPassword"
+                                        name="confirmPassword"
                                         type={showPasswords ? 'text' : 'password'}
                                         required
                                         value={passwordData.confirm}
@@ -235,10 +241,17 @@ export default function CitizenProfile() {
                                         </div>
                                     </div>
                                     <label className="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" className="sr-only peer" checked={profile?.preferences?.notifications?.email} onChange={(e) => handleUpdatePreferences({
-                                            ...profile.preferences,
-                                            notifications: { ...profile.preferences.notifications, email: e.target.checked }
-                                        })} />
+                                        <input
+                                            id="notifications-email"
+                                            name="notifications_email"
+                                            type="checkbox"
+                                            className="sr-only peer"
+                                            checked={profile?.preferences?.notifications?.email}
+                                            onChange={(e) => handleUpdatePreferences({
+                                                ...profile.preferences,
+                                                notifications: { ...profile.preferences.notifications, email: e.target.checked }
+                                            })}
+                                        />
                                         <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
                                     </label>
                                 </div>
@@ -254,10 +267,17 @@ export default function CitizenProfile() {
                                         </div>
                                     </div>
                                     <label className="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" className="sr-only peer" checked={profile?.preferences?.notifications?.sms} onChange={(e) => handleUpdatePreferences({
-                                            ...profile.preferences,
-                                            notifications: { ...profile.preferences.notifications, sms: e.target.checked }
-                                        })} />
+                                        <input
+                                            id="notifications-sms"
+                                            name="notifications_sms"
+                                            type="checkbox"
+                                            className="sr-only peer"
+                                            checked={profile?.preferences?.notifications?.sms}
+                                            onChange={(e) => handleUpdatePreferences({
+                                                ...profile.preferences,
+                                                notifications: { ...profile.preferences.notifications, sms: e.target.checked }
+                                            })}
+                                        />
                                         <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                     </label>
                                 </div>
@@ -289,8 +309,8 @@ export default function CitizenProfile() {
                                                     settings: { ...profile.preferences.settings, theme: t }
                                                 })}
                                                 className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${profile?.preferences?.settings?.theme === t
-                                                        ? 'bg-orange-500 text-white shadow-xl shadow-orange-900/20'
-                                                        : 'bg-white/5 text-slate-500 hover:text-white'
+                                                    ? 'bg-orange-500 text-white shadow-xl shadow-orange-900/20'
+                                                    : 'bg-white/5 text-slate-500 hover:text-white'
                                                     }`}
                                             >
                                                 {t}
@@ -304,9 +324,12 @@ export default function CitizenProfile() {
                                         <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-500">
                                             <Globe size={20} />
                                         </div>
-                                        <h4 className="font-bold text-white">Framework Lang</h4>
+                                        <h4 id="lang-label" className="font-bold text-white">Framework Lang</h4>
                                     </div>
                                     <select
+                                        id="settings-language"
+                                        name="settings_language"
+                                        aria-labelledby="lang-label"
                                         value={profile?.preferences?.settings?.language}
                                         onChange={(e) => handleUpdatePreferences({
                                             ...profile.preferences,

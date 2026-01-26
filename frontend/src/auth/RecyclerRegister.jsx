@@ -25,8 +25,8 @@ export default function RecyclerRegister() {
             await api.post('/auth/register', {
                 email: formData.email,
                 password: formData.password,
-                role: 'recycler',
-                displayName: formData.facilityName,
+                role: 'RECYCLER',
+                full_name: formData.facilityName,
                 organization: formData.licenseNumber
             });
             navigate('/login');

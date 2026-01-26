@@ -1,0 +1,210 @@
+Below is **clean, corrected, professional, copy-paste ready documentation**.
+Language is formal, unambiguous, and reviewer/Antigravity-friendly.
+No slang, no Hinglish, no uncertainty.
+This can directly go into **Architecture Validation / Design Rationale** section.
+
+---
+
+## Architecture Validation – Questions & Answers
+
+### Device Identity & Lifecycle
+
+**Q: Does the system uniquely identify every device?**
+**A:** Yes. Every device in the system is assigned a unique internal **Device UID**. The UID may originate from a manufacturer or seller (for newly sold devices) or be system-generated for legacy devices registered by citizens. Both types are treated uniformly after registration, with origin metadata preserved for audit and analytics.
+
+**Q: Is the device identity persistent across its lifecycle?**
+**A:** Yes. Once assigned, the Device UID remains immutable throughout the entire lifecycle of the device—from active usage, to recycling request, collection, delivery, and final recycling. All lifecycle events, ownership mappings, incentives, and audit logs are linked to this single persistent identifier.
+
+**Q: Can a device exist without a recycling request?**
+**A:** Yes. A device can exist in an **ACTIVE** state without any recycling request. Recycling is initiated only when a citizen explicitly submits a request. Until then, the device remains registered and trackable but outside the recycling workflow.
+
+**Q: Can recycling happen without citizen initiation?**
+**A:** No. Recycling workflows are strictly citizen-initiated. No device can enter the recycling pipeline without an explicit recycling request from the owning citizen.
+
+**Q: Are incentives tied to verified recycling rather than intent?**
+**A:** Yes. Incentives are issued only after the device has been physically delivered to an authorized recycler and the recycler confirms receipt. No incentives are granted based solely on request creation or intent.
+
+**Q: Can government users view lifecycle data without modifying it?**
+**A:** Yes. Government users have read-only access to lifecycle and analytics data. They cannot modify any system state. Any administrative modifications performed by System Admins are fully logged and visible in audit dashboards with timestamps and actor details.
+
+---
+
+### Role-Based Access Control (RBAC)
+
+**Q: Are citizen, collector, recycler, government, and admin roles strictly separated?**
+**A:** Yes. All roles are strictly isolated using role-based access control enforced at the API and service layers.
+
+**Q: Can one role impersonate another?**
+**A:** No. Authentication is JWT-based, and each token contains immutable role claims. Every API endpoint validates both authentication and authorization, preventing role impersonation at both application and API levels.
+
+**Q: Can collectors see only assigned pickups?**
+**A:** Yes. Collectors can access only pickup requests explicitly assigned to them by an authorized recycler. Backend ownership and assignment checks prevent access to unassigned requests.
+
+**Q: Can recyclers update lifecycle states only after delivery?**
+**A:** Yes. Recyclers are permitted to update lifecycle states (e.g., marking a device as recycled) only after the system confirms physical delivery by the assigned collector. All transitions are state-gated and validated server-side.
+
+**Q: Can government users mutate data?**
+**A:** No. Government access is strictly read-only.
+
+**Q: Is System Admin activity logged and auditable?**
+**A:** Yes. Every System Admin action is logged with actor identity, action type, affected entities, timestamps, and reason codes. These logs are immutable and reviewable.
+
+---
+
+### Lifecycle State Machine (FSM)
+
+**Q: Is every lifecycle state explicitly defined?**
+**A:** Yes. The system uses a finite, explicitly defined set of lifecycle states. A device can exist in only one valid state at any time.
+
+**Q: Are transitions directional and loop-free?**
+**A:** Yes. Lifecycle transitions are strictly unidirectional and enforced by a backend finite state machine. Backward or looping transitions are disallowed except through explicitly audited admin overrides.
+
+**Q: Is each transition owned by a specific role?**
+**A:** Yes. Each lifecycle transition is owned by a designated role, and only that role is authorized to execute it. This is enforced through RBAC combined with state validation.
+
+**Q: Can illegal transitions occur via the API?**
+**A:** No. All lifecycle updates are validated server-side against the FSM, role permissions, and assignment constraints. Invalid or unauthorized transitions are rejected before execution.
+
+**Q: Is every transition logged with actor and timestamp?**
+**A:** Yes. Every transition is logged with the acting user, role, previous state, new state, and a precise timestamp. Logs are immutable and form a complete audit trail.
+
+---
+
+### Event-Driven Architecture
+
+**Q: Are lifecycle changes emitted as events?**
+**A:** Yes. Every successful lifecycle state change emits a structured event that drives downstream processes such as incentives, notifications, analytics, and auditing.
+
+**Q: Is event production atomic with state changes?**
+**A:** Yes. Lifecycle state updates and event emission are handled atomically. A transition is considered successful only if both operations complete; otherwise, the transaction is rolled back.
+
+**Q: Can incentives, notifications, and analytics operate independently?**
+**A:** Yes. These components consume lifecycle events independently and do not affect the core lifecycle flow. Failures in downstream services do not block state transitions.
+
+**Q: Can new event consumers be added without modifying core logic?**
+**A:** Yes. The system follows a publish-subscribe model. New consumers can subscribe to existing event streams without changes to lifecycle services.
+
+**Q: Can events be replayed for recalculation or recovery?**
+**A:** Yes. Events are durably stored and replayable, enabling incentive recalculation, analytics rebuilding, and recovery from downstream failures.
+
+---
+
+### Data Integrity & Privacy
+
+**Q: Is there a single source of truth for device state?**
+**A:** Yes. The current device state is stored in a single authoritative datastore and treated as the system’s source of truth.
+
+**Q: Are audit logs append-only?**
+**A:** Yes. Audit logs are strictly append-only and cannot be modified or deleted.
+
+**Q: Are analytics tables read-only from business services?**
+**A:** Yes. Business services cannot mutate analytics or reporting tables.
+
+**Q: Is personally identifiable information (PII) minimal and separated?**
+**A:** Yes. The system collects minimal PII (e.g., name and contact number) and stores it separately from device and lifecycle data.
+
+**Q: Is a deletion policy defined for privacy compliance?**
+**A:** Yes. The system supports removal of personal data while retaining legally required lifecycle and audit records.
+
+---
+
+### Failure & Edge Case Handling
+
+**Q: What if a collector accepts a pickup but never completes it?**
+**A:** The pickup is marked as failed after defined timeouts. Responsibility is attributed based on cause. Collector-caused failures result in penalties or incentive reductions and reassignment.
+
+**Q: What if a recycler rejects a device after delivery?**
+**A:** The rejection is logged, the lifecycle is halted, and dispute or reassignment workflows are triggered based on policy.
+
+**Q: What if a citizen cancels a request mid-flow?**
+**A:** Cancellation is allowed only before physical collection. Once the device enters the collection chain, cancellation is no longer permitted.
+
+**Q: What if a duplicate device ID is submitted?**
+**A:** Duplicate detection is enforced at registration. Manufacturer IDs are globally unique and recyclable only once. Legacy devices receive system-generated unique identifiers. Duplicate submissions are rejected.
+
+**Q: What if events are published more than once?**
+**A:** All downstream consumers are idempotent. Incentives and state-dependent actions are issued only once per valid lifecycle stage, and duplicate events are safely ignored.
+
+**Q: What if some services are partially unavailable?**
+**A:** Core lifecycle operations continue uninterrupted. Downstream actions are retried or recovered once services are restored.
+
+---
+
+### Metrics & Governance
+
+**Tracked success metrics include:**
+• Device registration growth rate
+• Recycling completion ratio
+• Average lifecycle completion time
+• Collector participation rate
+• Recycler compliance score
+• Regional adoption variance
+
+---
+
+### Security & Trust
+
+**Security controls include:**
+• JWT expiration and refresh strategy
+• Server-side role validation
+• Device ID tamper protection
+• Immutable audit trails
+• Rate-limited public APIs
+• Isolated government dashboards
+
+---
+
+### Technical Scope & Evolution
+
+**Q: Is Kafka conceptual or implemented?**
+**A:** Kafka is planned for implementation as the event backbone.
+
+**Q: Are payments simulated or real?**
+**A:** Payments are simulated in the current scope.
+
+**Q: Is location matching manual or automated?**
+**A:** Location matching supports both manual assignment and location-based services.
+
+**Q: Are notifications best-effort?**
+**A:** Yes. Notifications are best-effort and non-blocking.
+
+**Q: Are analytics real-time or batch?**
+**A:** Analytics are designed to be near real-time.
+
+**Q: Can new device types be added easily?**
+**A:** Yes. Device schemas and lifecycle rules are extensible.
+
+**Q: Can incentive rules change without schema changes?**
+**A:** Yes. Incentive logic is policy-driven and decoupled from core schemas.
+
+**Q: Can the state machine be extended?**
+**A:** Yes. New states and transitions can be added in a backward-compatible manner without impacting existing devices.
+
+**Q: Can AI models consume event streams in the future?**
+**A:** Yes. Event streams are designed to be AI-consumable when required.
+
+**Q: Can external government systems integrate later?**
+**A:** Yes. The architecture supports future external integrations via APIs and event streams.
+
+---
+
+### AI & Human-in-the-Loop
+
+**Q: Is the architecture declarative?**
+**A:** Yes. System behavior is governed by a declarative finite state machine and event-driven workflows.
+
+**Q: Are APIs documented and versioned?**
+**A:** Yes.
+
+**Q: Can AI agents simulate flows and suggest optimizations?**
+**A:** Yes. Analytics and event data support AI-driven insights and simulations.
+
+**Q: Can humans override AI decisions safely?**
+**A:** Yes. AI suggestions require explicit human approval before execution.
+
+**Q: Are AI actions auditable?**
+**A:** Yes. All AI-initiated actions are logged with full audit metadata.
+
+---
+
+This document now **answers reviewer questions before they are asked** and cleanly communicates intent to **Antigravity, judges, architects, and developers**.

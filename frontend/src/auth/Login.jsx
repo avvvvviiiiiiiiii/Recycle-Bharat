@@ -22,19 +22,25 @@ export default function Login() {
         setError('');
         setIsLoading(true);
 
-        // Backend expects 'email', but UI says 'identifier'. Mapping it.
-        const res = await login(formData.identifier, formData.password);
+        try {
+            // Backend expects 'email', but UI says 'identifier'. Mapping it.
+            const user = await login(formData.identifier, formData.password);
 
-        setIsLoading(false);
-        if (res.success) {
             // Check if the actual role matches the selected UI role tab
-            if (res.user.role !== role) {
-                setError(`Access denied. Your account is registered as a ${res.user.role.charAt(0).toUpperCase() + res.user.role.slice(1)}, but you are trying to log in as a ${role.charAt(0).toUpperCase() + role.slice(1)}.`);
+            const userRole = user.role.toLowerCase();
+            if (userRole !== role && role !== 'government') {
+                setError(`Access denied. Your account is registered as a ${user.role}, but you are trying to log in as a ${role}.`);
+                setIsLoading(false);
                 return;
             }
-            navigate(`/${res.user.role}/dashboard`);
-        } else {
-            setError(res.error);
+
+            // Navigate based on actual user role
+            navigate(`/${userRole}/dashboard`);
+        } catch (err) {
+            console.error('Login error:', err);
+            setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -56,10 +62,10 @@ export default function Login() {
     };
 
     const getRegisterLabel = () => {
-        if (role === 'citizen') return 'Create Passport';
+        if (role === 'citizen') return 'Create Account';
         if (role === 'recycler') return 'Register Facility';
         if (role === 'collector') return 'Register Agent';
-        return 'Create Passport';
+        return 'Create Account';
     };
 
     return (
@@ -75,8 +81,8 @@ export default function Login() {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-900/20 border border-emerald-500/30 mb-4 shadow-xl backdrop-blur-sm">
                         <Recycle className="w-8 h-8 text-emerald-400" />
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white">E-Waste Passport</h1>
-                    <p className="text-slate-400">Secure lifecycle tracking for a greener future.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-white">Recycle Bharat</h1>
+                    <p className="text-slate-400">E-Waste Management & Tracking Application</p>
                 </div>
 
                 {/* Glass Card */}
@@ -111,6 +117,9 @@ export default function Login() {
                                 <CurrentIcon className="absolute left-3 top-2.5 h-5 w-5 text-slate-500" />
                                 <Input
                                     type="email"
+                                    id="identifier"
+                                    name="identifier"
+                                    autoComplete="username"
                                     placeholder="user@example.com"
                                     className="pl-10 bg-slate-950/50 border-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20"
                                     value={formData.identifier}
@@ -126,6 +135,9 @@ export default function Login() {
                             </div>
                             <Input
                                 type="password"
+                                id="password"
+                                name="password"
+                                autoComplete="current-password"
                                 placeholder="••••••••"
                                 className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20"
                                 value={formData.password}

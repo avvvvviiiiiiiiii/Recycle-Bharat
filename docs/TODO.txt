@@ -1,0 +1,295 @@
+Perfect. Now we turn this into an **execution-grade plan** that a PM, agent, or dev lead can actually run.
+I’ll give you a **phase-wise + task-wise TODO list**, and **clear success metrics (exit criteria)** for moving to the next phase.
+This is how real products are built and evaluated.
+
+No fluff. No buzzwords. Just control points.
+
+---
+
+# ✅ PHASE-WISE TODO LIST WITH SUCCESS CHECKS
+
+---
+
+## 🔹 PHASE 0 — Product & Scope Lock (FOUNDATION)
+
+### 🎯 Goal
+
+Remove ambiguity. Everyone agrees *what exactly is being built*.
+
+### Tasks
+
+* [ ] Finalize PRD (this document)
+* [ ] Lock user roles: Citizen, Kabadi, Recycler, Govt, Admin
+* [ ] Lock device lifecycle states
+* [ ] Decide MVP vs Future scope
+* [ ] Freeze incentive logic (credits for citizen, payout for kabadi)
+
+### Success Metrics (Gate to Phase 1)
+
+* ✔ All stakeholders agree on **one lifecycle flow**
+* ✔ No open questions about roles or permissions
+* ✔ PRD signed off (even if informally)
+
+👉 If this is not clear, **STOP**. Coding now = wasted effort.
+
+---
+
+## 🔹 PHASE 1 — System Design & Architecture
+
+### 🎯 Goal
+
+Translate idea → technical structure.
+
+### Tasks
+
+* [ ] Draw high-level system architecture
+* [ ] Define RBAC (who can do what)
+* [ ] Define device lifecycle state machine
+* [ ] Design database schema (tables + relations)
+* [ ] Define API contracts (inputs/outputs)
+
+### Key Artifacts
+
+* Architecture diagram
+* DB schema
+* API list
+
+### Success Metrics (Gate to Phase 2)
+
+* ✔ Every feature maps to a table + API
+* ✔ No feature without an owner (role)
+* ✔ State transitions are deterministic (no confusion)
+
+👉 If devs still ask “what happens after X?”, redesign.
+
+---
+
+## 🔹 PHASE 2 — Backend Core (SYSTEM BRAIN)
+
+### 🎯 Goal
+
+Make the system **functionally correct**, UI can come later.
+
+### Tasks
+
+* [ ] Setup backend project (Node + Express)
+* [ ] Implement authentication (JWT)
+* [ ] Implement RBAC middleware
+* [ ] Implement device lifecycle engine
+* [ ] APIs for:
+
+  * Device registration
+  * Recycling request
+  * Collector assignment
+  * Status updates
+* [ ] Audit logs for every state change
+
+### Success Metrics (Gate to Phase 3)
+
+* ✔ Device can move end-to-end through all states
+* ✔ Unauthorized role actions are blocked
+* ✔ Every action is logged
+* ✔ APIs work via Postman without UI
+
+👉 If lifecycle breaks → do NOT proceed.
+
+---
+
+## 🔹 PHASE 3 — Database & Data Integrity
+
+### 🎯 Goal
+
+Ensure **data consistency and traceability**.
+
+### Tasks
+
+* [ ] Implement PostgreSQL schema
+* [ ] Enforce foreign keys & constraints
+* [ ] Seed test data (citizens, devices, collectors)
+* [ ] Handle rollback / failure cases
+* [ ] Ensure no orphan records
+
+### Success Metrics (Gate to Phase 4)
+
+* ✔ No duplicate device ownership
+* ✔ No illegal state transitions
+* ✔ Every recycled device has a full history
+* ✔ Data survives restart/crash
+
+👉 This is what judges call *robust*.
+
+---
+
+## 🔹 PHASE 4 — Citizen Dashboard (USER ENTRY POINT)
+
+### 🎯 Goal
+
+Enable citizens to *actually use* the system.
+
+### Tasks
+
+* [ ] Citizen login & profile
+* [ ] View owned devices
+* [ ] Request recycling
+* [ ] Track lifecycle timeline
+* [ ] Credit points display
+
+### Success Metrics
+
+* ✔ Citizen can recycle without admin help
+* ✔ Status updates reflect backend changes
+* ✔ UX understandable in <30 seconds
+
+👉 If a non-tech user is confused → redesign.
+
+---
+
+## 🔹 PHASE 5 — Kabadi / Collector Dashboard
+
+### 🎯 Goal
+
+Digitally integrate informal workers **without friction**.
+
+### Tasks
+
+* [ ] Simple login flow
+* [ ] View assigned pickups
+* [ ] Enter device ID & confirm collection
+* [ ] Mark delivery to recycler
+* [ ] Earnings view
+
+### Success Metrics
+
+* ✔ Kabadi completes task in ≤3 clicks
+* ✔ No typing-heavy flows
+* ✔ Collection updates reflect instantly
+
+👉 If it feels complex → it will fail in real life.
+
+---
+
+## 🔹 PHASE 6 — Recycler Dashboard
+
+### 🎯 Goal
+
+Formalize recycling & compliance.
+
+### Tasks
+
+* [ ] View incoming requests
+* [ ] Accept/reject requests
+* [ ] Assign kabadi
+* [ ] Mark device as recycled
+* [ ] Recovery summary entry
+
+### Success Metrics
+
+* ✔ Recycler controls workflow
+* ✔ No device bypasses recycler
+* ✔ Compliance data is complete
+
+---
+
+## 🔹 PHASE 7 — Government / Authority Dashboard
+
+### 🎯 Goal
+
+Deliver **policy value**, not just charts.
+
+### Tasks
+
+* [ ] Global metrics (registered, recycled)
+* [ ] Region-wise analytics
+* [ ] Recycler performance stats
+* [ ] Historical trends
+* [ ] Exportable reports
+
+### Success Metrics
+
+* ✔ Dashboard answers “what’s happening?”
+* ✔ Data is real-time or near real-time
+* ✔ Trends visible, not just numbers
+
+👉 This slide often wins hackathons.
+
+---
+
+## 🔹 PHASE 8 — Incentives & Trust Layer
+
+### 🎯 Goal
+
+Ensure adoption via incentives.
+
+### Tasks
+
+* [ ] Credit calculation logic
+* [ ] Kabadi payout simulation
+* [ ] Citizen recognition badges
+* [ ] Fraud prevention checks
+
+### Success Metrics
+
+* ✔ Incentives only on completed recycling
+* ✔ No double-claiming possible
+* ✔ Clear audit trail
+
+---
+
+## 🔹 PHASE 9 — Testing & Demo Readiness
+
+### 🎯 Goal
+
+Be demo-proof under pressure.
+
+### Tasks
+
+* [ ] Full end-to-end test (citizen → recycler)
+* [ ] Role misuse testing
+* [ ] Edge case testing
+* [ ] Demo script preparation
+* [ ] Fallback data for demo
+
+### Success Metrics (FINAL GATE)
+
+* ✔ Demo runs without manual DB edits
+* ✔ One device can be shown live
+* ✔ Team members know their parts
+* ✔ System survives random clicks
+
+---
+
+# 📊 MASTER SUCCESS METRICS (GLOBAL)
+
+You are **ready** if:
+
+* ≥1 device completes full lifecycle
+* All 4 dashboards work
+* No manual backend intervention needed
+* Story can be explained in 2 minutes
+* Judges can’t break the flow with “what if” questions
+
+---
+
+## 🧠 Mentor Reality Check
+
+Most teams stop at Phase 4–5.
+If you reach **Phase 7**, you’re in **top-tier execution**.
+
+You now have:
+
+* A real roadmap
+* Clear gates
+* Engineering discipline
+
+---
+
+### What I recommend next (very high value)
+
+Pick ONE:
+
+1. Convert this into **Jira epics + tickets**
+2. Define **API endpoints in detail**
+3. Design **DB schema (tables + fields)**
+4. Create **judge demo flow (minute-by-minute)**
+
+Tell me which one you want — we’ll keep moving like a real startup team.

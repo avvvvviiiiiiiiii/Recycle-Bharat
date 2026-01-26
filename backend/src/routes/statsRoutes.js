@@ -5,6 +5,6 @@ const authMiddleware = require('../middleware/authMiddleware');
 const rbacMiddleware = require('../middleware/rbacMiddleware');
 
 // Only Government and Admin can access analytics
-router.get('/', authMiddleware, rbacMiddleware(['government', 'admin']), StatsController.getStats);
+router.get('/', authMiddleware, rbacMiddleware(['GOVT', 'ADMIN']), StatsController.getStats);
 
 module.exports = router;

@@ -8,7 +8,7 @@ import api from '@/services/api';
 
 export default function Register() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({ email: '', password: '', role: 'citizen' });
+    const [formData, setFormData] = useState({ full_name: '', email: '', password: '', role: 'citizen' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -19,9 +19,10 @@ export default function Register() {
 
         try {
             await api.post('/auth/register', {
+                full_name: formData.full_name,
                 email: formData.email,
                 password: formData.password,
-                role: 'citizen' // This page is exclusively for Citizens now
+                role: 'CITIZEN' // Backend expects uppercase
             });
             navigate('/login');
         } catch (err) {
@@ -47,7 +48,7 @@ export default function Register() {
                             <Recycle className="w-5 h-5 text-emerald-400" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-white leading-tight">Create Digital Passport</h1>
+                            <h1 className="text-2xl font-bold text-white leading-tight">Create Citizen Account</h1>
                             <p className="text-xs text-slate-500 font-medium">Citizen Registration Portal</p>
                         </div>
                     </div>
@@ -60,9 +61,26 @@ export default function Register() {
 
                     <form onSubmit={handleRegister} className="space-y-4">
                         <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-300 ml-1">Full Name</label>
+                            <Input
+                                type="text"
+                                id="full_name"
+                                name="full_name"
+                                autoComplete="name"
+                                placeholder="John Doe"
+                                className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50"
+                                value={formData.full_name}
+                                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-300 ml-1">Email Address</label>
                             <Input
                                 type="email"
+                                id="email"
+                                name="email"
+                                autoComplete="username"
                                 placeholder="john@example.com"
                                 className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50"
                                 value={formData.email}
@@ -75,6 +93,9 @@ export default function Register() {
                             <label className="text-sm font-medium text-slate-300 ml-1">Set Password</label>
                             <Input
                                 type="password"
+                                id="password"
+                                name="password"
+                                autoComplete="new-password"
                                 placeholder="Create a strong password"
                                 className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50"
                                 value={formData.password}
@@ -88,7 +109,7 @@ export default function Register() {
                             className="w-full mt-4 h-11 text-base group"
                             disabled={loading}
                         >
-                            {loading ? 'Creating Passport...' : 'Register Citizen Account'}
+                            {loading ? 'Creating Account...' : 'Register Citizen Account'}
                             {!loading && <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                         </Button>
                     </form>

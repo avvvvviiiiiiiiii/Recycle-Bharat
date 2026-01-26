@@ -1,51 +1,49 @@
-import { createContext, useState, useContext, useEffect } from 'react';
-import api from '../services/api';
+import { createContext, useState, useEffect, useContext } from 'react';
+import api from '../api/axios';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(() => {
+        try {
+            const storedUser = localStorage.getItem('user');
+            console.log('[AuthContext] Hydrating User from Storage:', storedUser);
+            return storedUser ? JSON.parse(storedUser) : null;
+        } catch (e) {
+            console.error('Failed to parse user from storage', e);
+            return null;
+        }
+    });
+    // We can assume loading is false if we read from storage effectively,
+    // or we can verify the token validity. For now, let's start with false.
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        // Check for token on mount
-        const token = localStorage.getItem('token');
-        if (token) {
-            // Decode or validate token? For now, we assume if it exists, we might need to fetch profile.
-            // But MVP: just decode role from token OR store user object in localStorage too.
-            // Let's store user in localStorage for persistence across refreshes.
-            const storedUser = localStorage.getItem('user');
-            if (storedUser) {
-                setUser(JSON.parse(storedUser));
-            }
-        }
-        setLoading(false);
+        // Optional: Validate token with backend on mount if needed
     }, []);
 
     const login = async (email, password) => {
+        // setLoading(true); // No longer needed as we transition state synchronously
         try {
+            console.log(`[Auth] Logging in as: ${email}, Password length: ${password.length}`);
             const res = await api.post('/auth/login', { email, password });
+            console.log('AuthContext: Login response:', res.data);
             const { token, user } = res.data;
 
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
-            return { success: true, user };
-        } catch (err) {
-            console.error('Login error:', err);
-            let errorMessage = 'Login failed';
-
-            if (err.code === 'ERR_NETWORK' || !err.response) {
-                errorMessage = 'Server Unreachable: The backend process has likely crashed. Please check your database connection or whitelist settings.';
-            } else {
-                errorMessage = err.response?.data?.error || 'Login failed';
-            }
-
-            return {
-                success: false,
-                error: errorMessage
-            };
+            return user;
+        } catch (error) {
+            console.error('AuthContext: Login API error:', error.response || error);
+            throw error;
         }
+    };
+
+    const register = async (userData) => {
+        await api.post('/auth/register', userData);
+        // We don't auto-login after register, or maybe we do? 
+        // For now, redirect to login.
     };
 
     const logout = () => {
@@ -55,7 +53,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );

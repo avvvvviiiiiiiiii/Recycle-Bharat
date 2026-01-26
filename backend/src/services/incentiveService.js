@@ -1,5 +1,4 @@
-const IncentiveModel = require('../models/incentiveModel');
-const AuditModel = require('../models/auditModel');
+const { pool } = require('../config/db');
 
 class IncentiveService {
     /**
@@ -8,46 +7,60 @@ class IncentiveService {
      */
     static async issueReward({ userId, deviceId }) {
         try {
-            // Check if reward already exists (Idempotency)
-            const existing = await IncentiveModel.findOne({ deviceId });
-            if (existing) {
+            // Check if incentive already exists (Idempotency) verification
+            const existingRes = await pool.query('SELECT * FROM incentives WHERE device_id = $1', [deviceId]);
+            if (existingRes.rows.length > 0) {
                 console.log(`[IncentiveService] Reward already issued for device ${deviceId}. Skipping.`);
-                return existing;
+                return existingRes.rows[0];
             }
 
             // Create incentive record
-            const reward = await IncentiveModel.create({
-                userId,
-                deviceId,
-                amount: 100 // MVP Flat reward
-            });
+            const rewardRes = await pool.query(
+                `INSERT INTO incentives (user_id, device_id, amount, status)
+                 VALUES ($1, $2, 100, 'PAID')
+                 RETURNING *`,
+                [userId, deviceId]
+            );
+            const reward = rewardRes.rows[0];
 
             // Log the event in audit logs
-            await AuditModel.create({
-                actorId: userId,
-                action: 'INCENTIVE_ISSUED',
-                details: { deviceId, amount: reward.amount, incentiveId: reward._id }
-            });
+            await pool.query(
+                `INSERT INTO lifecycle_events (device_id, triggered_by_user_id, event_type, metadata, to_state)
+                 VALUES ($1, $2, 'INCENTIVE_ISSUED', $3, 'RECYCLED')`,
+                [deviceId, userId, JSON.stringify({ amount: 100, incentiveId: reward.id })]
+                // Note: 'to_state' is required by schema, assuming this happens at RECYCLED state or keeping distinct
+            );
 
             console.log(`[IncentiveService] Issued ${reward.amount} points to user ${userId} for device ${deviceId}`);
             return reward;
         } catch (err) {
+            console.error('[IncentiveService] Error:', err);
             // Handle race conditions or duplicate entries
-            if (err.code === 11000) {
+            if (err.code === '23505') { // Postgres Unique Violation
                 console.log(`[IncentiveService] Race condition detected. Reward already exists for device ${deviceId}.`);
-                return await IncentiveModel.findOne({ deviceId });
+                const existing = await pool.query('SELECT * FROM incentives WHERE device_id = $1', [deviceId]);
+                return existing.rows[0];
             }
             throw err;
         }
     }
 
     static async getUserBalance(userId) {
-        const rewards = await IncentiveModel.find({ userId });
-        return rewards.reduce((sum, r) => sum + r.amount, 0);
+        const res = await pool.query('SELECT SUM(amount) as balance FROM incentives WHERE user_id = $1', [userId]);
+        return parseInt(res.rows[0].balance || 0);
     }
 
     static async getUserRewards(userId) {
-        return await IncentiveModel.find({ userId }).populate('deviceId', 'model uid').sort({ createdAt: -1 });
+        // Fetch rewards with device details
+        const res = await pool.query(
+            `SELECT i.*, d.model, d.device_uid as uid 
+             FROM incentives i
+             LEFT JOIN devices d ON i.device_id = d.id
+             WHERE i.user_id = $1 
+             ORDER BY i.issued_at DESC`,
+            [userId]
+        );
+        return res.rows;
     }
 }
 

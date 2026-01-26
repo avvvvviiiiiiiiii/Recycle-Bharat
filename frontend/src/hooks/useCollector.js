@@ -1,62 +1,57 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../services/api';
+import api from '../api/axios';
 
 export const useCollector = () => {
     const queryClient = useQueryClient();
 
     // Fetch Assigned Pickups
-    const { data: assignments, isLoading } = useQuery({
-        queryKey: ['assigned-pickups'],
+    const { data: assignments, isLoading, error } = useQuery({
+        queryKey: ['collector-assignments'],
         queryFn: async () => {
-            const res = await api.get('/devices/assigned');
-            return res.data;
+            const res = await api.get('/collector/assignments');
+            return res.data.map(a => ({
+                _id: a.id,
+                ...a, // Keep other fields
+                model: a.model,
+                description: `${a.brand} ${a.device_type}`,
+                uid: a.device_type === 'Legacy' ? 'LEGACY' : 'REGULATED', // Mock or real UID
+                // Actually API returns d.device_type, d.brand...
+                // Need to ensure UI gets what it needs.
+                // Dashboard uses: task.model, task.description, task.uid, task.ownerId.email
+                ownerId: { email: a.pickup_address } // Hack to show address where email is expected
+            }));
         },
-    });
-
-    // Fetch Completed Jobs
-    const { data: history, isLoading: isLoadingHistory } = useQuery({
-        queryKey: ['collector-history'],
-        queryFn: async () => {
-            const res = await api.get('/devices/collector-history');
-            return res.data;
-        },
-        refetchInterval: 5000,
     });
 
     // Confirm Pickup
     const pickupMutation = useMutation({
-        mutationFn: async ({ deviceId, duc }) => {
-            const res = await api.patch(`/devices/${deviceId}/status`, {
-                status: 'COLLECTED',
-                duc
-            });
+        mutationFn: async ({ assignmentId, verification_metadata }) => {
+            const res = await api.post(`/collector/assignments/${assignmentId}/pickup`, { verification_metadata });
             return res.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries();
+            queryClient.invalidateQueries(['collector-assignments']);
         },
     });
 
     // Confirm Delivery
-    const deliveryMutation = useMutation({
-        mutationFn: async ({ deviceId, duc }) => {
-            const res = await api.patch(`/devices/${deviceId}/status`, {
-                status: 'DELIVERED_TO_RECYCLER',
-                duc
-            });
+    const deliverMutation = useMutation({
+        mutationFn: async (assignmentId) => {
+            const res = await api.post(`/collector/assignments/${assignmentId}/deliver`);
             return res.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries();
+            queryClient.invalidateQueries(['collector-assignments']);
         },
     });
 
     return {
         assignments,
-        history: history || [],
-        isLoading: isLoading || isLoadingHistory,
+        isLoading,
+        error,
         confirmPickup: pickupMutation.mutateAsync,
-        confirmDelivery: deliveryMutation.mutateAsync,
-        isProcessing: pickupMutation.isPending || deliveryMutation.isPending
+        isConfirmingPickup: pickupMutation.isPending,
+        confirmDelivery: deliverMutation.mutateAsync,
+        isConfirmingDelivery: deliverMutation.isPending,
     };
 };

@@ -94,7 +94,10 @@ export default function PickupDetails() {
                     <p className="text-xs text-blue-300/70">Ask citizen for the 4-digit pickup code shown in their app.</p>
 
                     <div className="flex gap-2">
+                        <label htmlFor="otp_input" className="sr-only">Enter OTP</label>
                         <Input
+                            id="otp_input"
+                            name="otp_input"
                             placeholder="Enter 4-Digit OTP"
                             className="bg-slate-950/50 border-blue-500/30 focus:border-blue-500 font-mono text-center tracking-widest text-lg"
                             maxLength={4}

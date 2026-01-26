@@ -57,7 +57,7 @@ function App() {
 
               {/* Citizen Routes */}
               <Route path="/citizen" element={
-                <ProtectedRoute allowedRoles={['citizen']}>
+                <ProtectedRoute allowedRoles={['CITIZEN']}>
                   <CitizenLayout />
                 </ProtectedRoute>
               }>
@@ -72,7 +72,7 @@ function App() {
 
               {/* Collector Routes */}
               <Route path="/collector" element={
-                <ProtectedRoute allowedRoles={['collector']}>
+                <ProtectedRoute allowedRoles={['COLLECTOR']}>
                   <CollectorLayout />
                 </ProtectedRoute>
               }>
@@ -85,7 +85,7 @@ function App() {
 
               {/* Recycler Routes */}
               <Route path="/recycler" element={
-                <ProtectedRoute allowedRoles={['recycler']}>
+                <ProtectedRoute allowedRoles={['RECYCLER']}>
                   <RecyclerLayout />
                 </ProtectedRoute>
               }>
@@ -99,7 +99,7 @@ function App() {
 
               {/* Government Routes */}
               <Route path="/government" element={
-                <ProtectedRoute allowedRoles={['government']}>
+                <ProtectedRoute allowedRoles={['GOVT']}>
                   <GovernmentLayout />
                 </ProtectedRoute>
               }>
@@ -109,7 +109,7 @@ function App() {
 
               {/* Admin Routes */}
               <Route path="/admin" element={
-                <ProtectedRoute allowedRoles={['admin']}>
+                <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminLayout />
                 </ProtectedRoute>
               }>

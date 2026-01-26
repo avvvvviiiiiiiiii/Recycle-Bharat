@@ -111,7 +111,7 @@ const AssignmentCard = ({ task, navigate, confirmPickup, isProcessing }) => {
 
             {task.status === 'COLLECTOR_ASSIGNED' && (
                 <ConfirmWithDuc
-                    onConfirm={(duc) => confirmPickup({ deviceId: task._id, duc })}
+                    onConfirm={(duc) => confirmPickup({ assignmentId: task._id, verification_metadata: { duc } })}
                     label="Confirm Pickup"
                     icon={<PackageCheck size={18} />}
                     isProcessing={isProcessing}
@@ -124,11 +124,12 @@ const AssignmentCard = ({ task, navigate, confirmPickup, isProcessing }) => {
                         <Truck size={14} /> In Transit to Recycler
                     </div>
 
-                    <div className="p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl text-center group/duc">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Authorization DUC</p>
-                        <p className="font-mono text-2xl font-black text-slate-800 tracking-[0.3em] group-hover/duc:text-blue-600 transition-colors">{task.currentDuc}</p>
-                        <p className="text-[8px] text-slate-400 mt-2">Display this code to the Recycler agent</p>
-                    </div>
+                    <button
+                        onClick={() => window.confirm('Confirm delivery to Recycler Facility?') && confirmDelivery(task._id)}
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                        <PackageCheck size={16} /> Confirm Delivery
+                    </button>
                 </div>
             )}
         </div>

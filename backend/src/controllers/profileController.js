@@ -1,37 +1,18 @@
-const User = require('../models/userModel');
+const { pool } = require('../config/db');
 const bcrypt = require('bcryptjs');
-
-// Mock User Model for offline mode
-const MockUser = {
-    findById: (id) => ({
-        select: () => ({
-            _id: id,
-            email: 'citizen@test.com',
-            displayName: 'Mock Agent',
-            role: 'citizen',
-            preferences: {
-                notifications: { email: true, sms: false },
-                settings: { theme: 'dark', language: 'en' }
-            }
-        })
-    }),
-    findByIdAndUpdate: (id, update) => ({
-        select: () => ({
-            _id: id,
-            ...update.$set,
-            email: 'citizen@test.com',
-            role: 'citizen'
-        })
-    })
-};
-
-const Model = process.env.USE_MOCK_DB === 'true' ? MockUser : User;
 
 class ProfileController {
     static async getProfile(req, res) {
         try {
-            const user = await Model.findById(req.user.id).select('-password');
-            if (!user) return res.status(404).json({ error: 'User not found' });
+            const result = await pool.query(
+                'SELECT id, email, role, full_name as "displayName", phone, address, created_at FROM users WHERE id = $1',
+                [req.user.id]
+            );
+
+            if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+            // Add _id field to match frontend expectation (MongoDB legacy)
+            const user = { ...result.rows[0], _id: result.rows[0].id.toString() };
             res.json(user);
         } catch (err) {
             console.error(err);
@@ -41,17 +22,36 @@ class ProfileController {
 
     static async updateProfile(req, res) {
         try {
-            const { displayName, organization, preferences } = req.body;
-            const updateFields = {};
-            if (displayName !== undefined) updateFields.displayName = displayName;
-            if (organization !== undefined) updateFields.organization = organization;
-            if (preferences !== undefined) updateFields.preferences = preferences;
+            const { displayName, phone, address } = req.body;
+            // Note: Frontend sends 'displayName', we map to 'full_name'
+            // 'organization' and 'preferences' are not in standard schema currently, need to see where to store them.
+            // For MVP, we only update core table fields. 
 
-            const user = await Model.findByIdAndUpdate(
-                req.user.id,
-                { $set: updateFields },
-                { new: true, runValidators: true }
-            ).select('-password');
+            // Construct dynamic update query
+            const fields = [];
+            const values = [];
+            let idx = 1;
+
+            if (displayName) {
+                fields.push(`full_name = $${idx++}`);
+                values.push(displayName);
+            }
+            if (phone) {
+                fields.push(`phone = $${idx++}`);
+                values.push(phone);
+            }
+            if (address) {
+                fields.push(`address = $${idx++}`);
+                values.push(address);
+            }
+
+            if (fields.length === 0) return res.json({ message: 'No changes provided' });
+
+            values.push(req.user.id);
+            const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING id, email, role, full_name as "displayName", phone, address`;
+
+            const result = await pool.query(query, values);
+            const user = { ...result.rows[0], _id: result.rows[0].id.toString() };
 
             res.json(user);
         } catch (err) {
@@ -63,25 +63,29 @@ class ProfileController {
     static async changePassword(req, res) {
         try {
             const { currentPassword, newPassword } = req.body;
-            if (process.env.USE_MOCK_DB === 'true') {
-                return res.json({ message: 'Password updated successfully (Mock Mode)' });
-            }
 
             if (!currentPassword || !newPassword) {
                 return res.status(400).json({ error: 'Please provide current and new passwords' });
             }
 
-            const user = await User.findById(req.user.id);
-            if (!user) return res.status(404).json({ error: 'User not found' });
+            // 1. Get current hash
+            const userRes = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+            if (userRes.rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
-            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            const currentHash = userRes.rows[0].password_hash;
+
+            // 2. Verify
+            const isMatch = await bcrypt.compare(currentPassword, currentHash);
             if (!isMatch) {
                 return res.status(400).json({ error: 'Invalid current password' });
             }
 
+            // 3. Hash New
             const salt = await bcrypt.genSalt(10);
-            user.password = await bcrypt.hash(newPassword, salt);
-            await user.save();
+            const newHash = await bcrypt.hash(newPassword, salt);
+
+            // 4. Update
+            await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newHash, req.user.id]);
 
             res.json({ message: 'Password updated successfully' });
         } catch (err) {

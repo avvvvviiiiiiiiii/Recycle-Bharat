@@ -1,0 +1,211 @@
+Perfect. These two items are the **spine** of your system. If these are clear, everything else becomes implementation detail.
+
+I’ll define them the way a senior engineer would: **precise, enforceable, and implementation-ready**, not fluffy.
+
+---
+
+## 1️⃣ RBAC — Role Based Access Control
+
+**(Who can do what, exactly)**
+
+RBAC is not about screens.
+It is about **what mutations a role is allowed to perform on system state**.
+
+### Roles (authoritative list)
+
+**Citizen**
+
+* Owns devices
+* Initiates recycling
+* Observes lifecycle
+
+**Collector (Kabadi)**
+
+* Physically moves devices
+* Confirms pickup & delivery
+
+**Recycler (Authorized)**
+
+* Orchestrates recycling
+* Confirms recycling completion
+
+**Government Authority**
+
+* Observes system health
+* Audits compliance
+
+**System Admin**
+
+* Exceptional override authority
+* Configuration management
+
+---
+
+### RBAC Permission Matrix (Canonical)
+
+| Action                      | Citizen | Collector | Recycler | Govt | Admin |
+| --------------------------- | ------- | --------- | -------- | ---- | ----- |
+| Register device             | ✅       | ❌         | ❌        | ❌    | ❌     |
+| View own devices            | ✅       | ❌         | ❌        | ❌    | ❌     |
+| Request recycling           | ✅       | ❌         | ❌        | ❌    | ❌     |
+| Cancel request (pre-pickup) | ✅       | ❌         | ❌        | ❌    | ❌     |
+| View assigned pickup        | ❌       | ✅         | ❌        | ❌    | ❌     |
+| Confirm pickup              | ❌       | ✅         | ❌        | ❌    | ❌     |
+| Confirm delivery            | ❌       | ✅         | ❌        | ❌    | ❌     |
+| Assign collector            | ❌       | ❌         | ✅        | ❌    | ❌     |
+| Accept / reject request     | ❌       | ❌         | ✅        | ❌    | ❌     |
+| Mark recycled               | ❌       | ❌         | ✅        | ❌    | ❌     |
+| View analytics              | ❌       | ❌         | ❌        | ✅    | ❌     |
+| Modify data                 | ❌       | ❌         | ❌        | ❌    | ⚠️    |
+| Admin override              | ❌       | ❌         | ❌        | ❌    | ✅     |
+
+⚠️ Admin modifications are **audited, justified, and immutable**.
+
+---
+
+### Enforcement Rules (Non-Negotiable)
+
+* RBAC enforced **server-side only**
+* JWT contains:
+
+  * `user_id`
+  * `role`
+* Every API endpoint checks:
+
+  * role
+  * ownership (device / assignment)
+  * lifecycle state
+
+> UI permissions are cosmetic.
+> Backend permissions are law.
+
+---
+
+## 2️⃣ Device Lifecycle State Machine
+
+**(What states exist and how transitions occur)**
+
+This is a **Finite State Machine (FSM)** — not flags, not booleans.
+
+### Authoritative States
+
+```
+ACTIVE
+RECYCLING_REQUESTED
+COLLECTOR_ASSIGNED
+COLLECTED
+DELIVERED_TO_RECYCLER
+RECYCLED
+```
+
+Optional (future-safe, not MVP-required):
+
+```
+DISPUTE_PENDING
+CANCELLED
+```
+
+---
+
+### State Transition Table (Single Source of Truth)
+
+| From State            | To State              | Triggered By | Conditions                           |
+| --------------------- | --------------------- | ------------ | ------------------------------------ |
+| ACTIVE                | RECYCLING_REQUESTED   | Citizen      | Device owned & not already requested |
+| RECYCLING_REQUESTED   | COLLECTOR_ASSIGNED    | Recycler     | Authorized recycler accepts request  |
+| COLLECTOR_ASSIGNED    | COLLECTED             | Collector    | Assigned collector only              |
+| COLLECTED             | DELIVERED_TO_RECYCLER | Collector    | Delivery confirmation                |
+| DELIVERED_TO_RECYCLER | RECYCLED              | Recycler     | Physical receipt verified            |
+
+---
+
+### Cancellation Rules (Very Important)
+
+* Citizen **can cancel** only in:
+
+  * `RECYCLING_REQUESTED`
+* Cancellation **NOT allowed** after:
+
+  * `COLLECTOR_ASSIGNED`
+
+Reason: physical chain has started.
+
+---
+
+### Illegal Transitions (Explicitly Forbidden)
+
+* ACTIVE → COLLECTED ❌
+* COLLECTED → RECYCLING_REQUESTED ❌
+* COLLECTOR marking RECYCLED ❌
+* Recycler skipping COLLECTED ❌
+
+All rejected at API level.
+
+---
+
+### Admin Override (Exception Path)
+
+Admin may:
+
+* Move device to `DISPUTE_PENDING`
+* Correct state with **reason + timestamp**
+
+Admin **cannot**:
+
+* Delete lifecycle history
+* Edit past transitions
+
+Overrides create **compensating events**, not rewrites.
+
+---
+
+## 3️⃣ Event Emission (FSM + Kafka Alignment)
+
+Every **successful transition** emits:
+
+```
+DeviceLifecycleChanged {
+  device_id
+  previous_state
+  new_state
+  actor_id
+  actor_role
+  timestamp
+}
+```
+
+Consumers:
+
+* Incentive Engine
+* Notifications
+* Analytics
+* Audit Log
+
+FSM is **the producer**.
+Everything else reacts.
+
+---
+
+## 4️⃣ Why This Design Will Not Break
+
+* No role ambiguity
+* No silent state mutation
+* No skipped steps
+* No reward fraud
+* Fully auditable
+* Scales cleanly with events
+
+This is **production-grade** thinking.
+
+---
+
+### What to lock next (in correct order)
+
+1️⃣ FSM diagram (boxes + arrows)
+2️⃣ API contract for transitions
+3️⃣ Event schema (Kafka)
+4️⃣ DB schema
+
+Do these in order and you’ll never have to “rethink” the system.
+
+You’re doing real system design now — not just diagrams.

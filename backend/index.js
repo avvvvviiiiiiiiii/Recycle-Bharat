@@ -1,10 +1,6 @@
 require('dotenv').config();
 const app = require('./src/app');
 const { pool } = require('./src/config/db');
-// const initIncentiveSubscriber = require('./src/subscribers/incentiveSubscriber'); // Commenting out until refactored
-
-// Initialize Event Subscribers
-// initIncentiveSubscriber();
 
 const PORT = process.env.PORT || 5000;
 
@@ -15,7 +11,7 @@ const startServer = async () => {
         console.log('✅ Database connected:', res.rows[0].now);
 
         app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
+            console.log(`✅ Server running on port ${PORT}`);
         });
 
     } catch (err) {

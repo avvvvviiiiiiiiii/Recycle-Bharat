@@ -6,7 +6,12 @@ const CitizenDashboard = () => {
     const navigate = useNavigate();
     const { devices, isLoading } = useDevices();
 
-    if (isLoading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-emerald-500" /></div>;
+    console.log('CitizenDashboard Render:', { isLoading, devicesCount: devices?.length, devices });
+
+    if (isLoading) {
+        console.log('CitizenDashboard: Loading state active');
+        return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-emerald-500" /></div>;
+    }
 
     const regulatedDevices = devices?.filter(d => d.recycleNumber) || [];
     const legacyDevices = devices?.filter(d => !d.recycleNumber) || [];
@@ -125,7 +130,7 @@ const DeviceCard = ({ device, variant, navigate }) => {
                 )}
                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500">
                     <span className={`group-hover:text-${cardAccent}-400 transition-colors flex items-center gap-2`}>
-                        {device.isTerminated ? 'Lifecycle Archive' : 'Passport details'}
+                        {device.isTerminated ? 'Lifecycle Archive' : 'Device details'}
                         <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                     </span>
                 </div>
