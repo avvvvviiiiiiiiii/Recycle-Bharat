@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  --color-background-hsl: 222 47% 11%;
+  --color-foreground-hsl: 210 40% 98%;
+
+  --color-primary: oklch(0.7 0.2 160);
+  /* Vibrant Emerald */
+  --color-primary-foreground: oklch(0.2 0.05 160);
+
+  --color-secondary: oklch(0.3 0.05 240);
+  --color-secondary-foreground: oklch(0.95 0.01 240);
+
+  --color-muted: oklch(0.4 0.02 240);
+  --color-muted-foreground: oklch(0.7 0.02 240);
+
+  --color-accent: oklch(0.8 0.15 190);
+  /* Teal Accent */
+  --color-accent-foreground: oklch(0.2 0.05 190);
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+
+  --animate-float: float 3s ease-in-out infinite;
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+}
+
+/* Custom Base Styles */
+@layer base {
+  :root {
+    --background: var(--color-background-hsl);
+    --foreground: var(--color-foreground-hsl);
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(at 0% 0%, oklch(0.2 0.05 160 / 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, oklch(0.2 0.05 240 / 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+/* Premium Component Utilities */
+@layer utilities {
+  .glass-panel {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .text-gradient {
+    background: linear-gradient(to right, oklch(0.8 0.15 160), oklch(0.8 0.15 190));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .premium-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: color-mix(in oklch, var(--color-secondary), transparent 40%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .premium-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  }
+}
