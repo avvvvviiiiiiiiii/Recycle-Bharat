@@ -36,6 +36,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes
+app.use('/api/public', require('./routes/publicRoutes')); // Public routes (no auth)
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/devices', require('./routes/deviceRoutes'));
 app.use('/api/recycling', require('./routes/recyclingRoutes'));
