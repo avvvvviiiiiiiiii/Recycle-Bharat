@@ -13,7 +13,7 @@ const FSM = {
         'COLLECTED': ['COLLECTOR']
     },
     'COLLECTED': {
-        'DELIVERED_TO_RECYCLER': ['COLLECTOR']
+        'DELIVERED_TO_RECYCLER': ['COLLECTOR', 'RECYCLER']
     },
     'DELIVERED_TO_RECYCLER': {
         'RECYCLED': ['RECYCLER']

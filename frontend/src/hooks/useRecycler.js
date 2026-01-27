@@ -44,12 +44,23 @@ export const useRecycler = () => {
                 email: c.email
             }));
 
-            return { requests, deliveries, inventory, collectors };
+            // Map Assigned Dispatches
+            const assigned = (d.assigned || []).map(dev => ({
+                _id: dev.id,
+                model: dev.model,
+                uid: dev.device_uid,
+                description: dev.description,
+                status: dev.current_state,
+                collectorId: { displayName: dev.collector_name, email: dev.collector_email },
+                updatedAt: dev.updated_at
+            }));
+
+            return { requests, deliveries, inventory, collectors, assigned };
         },
     });
 
     // Destructure for consumption
-    const { requests, deliveries, inventory, collectors } = dashboardData || { requests: [], deliveries: [], inventory: [], collectors: [] };
+    const { requests, deliveries, inventory, collectors, assigned } = dashboardData || { requests: [], deliveries: [], inventory: [], collectors: [], assigned: [] };
 
     // Assign Collector
     const assignMutation = useMutation({
@@ -65,6 +76,17 @@ export const useRecycler = () => {
         },
     });
 
+    // Verify Handover (COLLECTED -> DELIVERED_TO_RECYCLER)
+    const deliverMutation = useMutation({
+        mutationFn: async ({ deviceId, duc }) => {
+            const res = await api.post(`/recycling/devices/${deviceId}/handover`, { duc });
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['recycler-dashboard']);
+        },
+    });
+
     // Mark Recycled
     const completeMutation = useMutation({
         mutationFn: async ({ deviceId, proofMetadata }) => {
@@ -72,7 +94,7 @@ export const useRecycler = () => {
             return res.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['recycler-requests']);
+            queryClient.invalidateQueries(['recycler-dashboard']);
         },
     });
 
@@ -81,11 +103,14 @@ export const useRecycler = () => {
         deliveries,
         inventory,
         collectors,
+        assigned,
         isLoading,
         error,
         assignCollector: assignMutation.mutateAsync,
         isAssigning: assignMutation.isPending,
-        completeRecycling: completeMutation.mutateAsync,
-        isCompleting: completeMutation.isPending,
+        confirmDelivery: deliverMutation.mutateAsync,
+        isDelivering: deliverMutation.isPending,
+        markRecycled: completeMutation.mutateAsync,
+        isRecycling: completeMutation.isPending,
     };
 };

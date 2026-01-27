@@ -5,7 +5,7 @@ class ProfileController {
     static async getProfile(req, res) {
         try {
             const result = await pool.query(
-                'SELECT id, email, role, full_name as "displayName", phone, address, created_at FROM users WHERE id = $1',
+                'SELECT id, email, role, full_name as "displayName", phone, address, organization, avatar_url, created_at FROM users WHERE id = $1',
                 [req.user.id]
             );
 
@@ -22,12 +22,19 @@ class ProfileController {
 
     static async updateProfile(req, res) {
         try {
-            const { displayName, phone, address } = req.body;
-            // Note: Frontend sends 'displayName', we map to 'full_name'
-            // 'organization' and 'preferences' are not in standard schema currently, need to see where to store them.
-            // For MVP, we only update core table fields. 
+            console.log('[Profile Update] Request Body:', req.body);
+            console.log('[Profile Update] Auth User:', req.user);
 
-            // Construct dynamic update query
+            const { displayName, email, organization, phone, address, avatar_url } = req.body;
+
+            // 1. If email is changing, check uniqueness
+            if (email && email !== req.user.email) {
+                const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+                if (existing.rows.length > 0) {
+                    return res.status(409).json({ error: 'Email already in use by another account' });
+                }
+            }
+
             const fields = [];
             const values = [];
             let idx = 1;
@@ -35,6 +42,14 @@ class ProfileController {
             if (displayName) {
                 fields.push(`full_name = $${idx++}`);
                 values.push(displayName);
+            }
+            if (email) {
+                fields.push(`email = $${idx++}`);
+                values.push(email);
+            }
+            if (organization) {
+                fields.push(`organization = $${idx++}`);
+                values.push(organization);
             }
             if (phone) {
                 fields.push(`phone = $${idx++}`);
@@ -44,11 +59,15 @@ class ProfileController {
                 fields.push(`address = $${idx++}`);
                 values.push(address);
             }
+            if (avatar_url) {
+                fields.push(`avatar_url = $${idx++}`);
+                values.push(avatar_url);
+            }
 
             if (fields.length === 0) return res.json({ message: 'No changes provided' });
 
             values.push(req.user.id);
-            const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING id, email, role, full_name as "displayName", phone, address`;
+            const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING id, email, role, full_name as "displayName", phone, address, organization, avatar_url`;
 
             const result = await pool.query(query, values);
             const user = { ...result.rows[0], _id: result.rows[0].id.toString() };

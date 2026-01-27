@@ -1,0 +1,68 @@
+[dotenv@17.2.3] injecting env (5) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+✅ Connected to PostgreSQL Database
+
+--- Columns for users ---
+id (integer)
+role (USER-DEFINED)
+is_active (boolean)
+created_at (timestamp with time zone)
+updated_at (timestamp with time zone)
+phone (character varying)
+email (character varying)
+password_hash (character varying)
+address (text)
+full_name (character varying)
+
+--- Columns for devices ---
+is_terminated (boolean)
+device_uid (uuid)
+device_uid_origin (USER-DEFINED)
+owner_id (integer)
+purchase_year (integer)
+current_state (USER-DEFINED)
+created_at (timestamp with time zone)
+updated_at (timestamp with time zone)
+failed_duc_attempts (integer)
+id (integer)
+current_duc (character varying)
+duc_hash (character varying)
+device_type (character varying)
+brand (character varying)
+model (character varying)
+serial_number (character varying)
+description (text)
+recycle_number (character varying)
+
+--- Columns for recycling_requests ---
+updated_at (timestamp with time zone)
+device_id (integer)
+citizen_id (integer)
+id (integer)
+pickup_latitude (numeric)
+pickup_longitude (numeric)
+preferred_date (date)
+status (USER-DEFINED)
+created_at (timestamp with time zone)
+pickup_address (text)
+
+--- Columns for collector_assignments ---
+id (integer)
+request_id (integer)
+collector_id (integer)
+assigned_at (timestamp with time zone)
+scheduled_pickup_time (timestamp with time zone)
+actual_pickup_time (timestamp with time zone)
+status (USER-DEFINED)
+notes (text)
+
+--- Columns for lifecycle_events ---
+timestamp (timestamp with time zone)
+device_id (integer)
+metadata (jsonb)
+ip_address (inet)
+id (integer)
+triggered_by_user_id (integer)
+from_state (character varying)
+to_state (character varying)
+event_type (character varying)

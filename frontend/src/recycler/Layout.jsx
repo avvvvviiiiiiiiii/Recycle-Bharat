@@ -2,13 +2,15 @@ import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Factory, Inbox, Truck, History, LogOut, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 export default function RecyclerLayout() {
     const location = useLocation();
+    const { user } = useAuth();
 
     const navItems = [
         { label: 'Incoming Requests', icon: Inbox, path: '/recycler/dashboard' },
-        { label: 'Collector Assignments', icon: Truck, path: '/recycler/assignments' },
+        { label: 'Logistics Partners', icon: Truck, path: '/recycler/assignments' },
         { label: 'Processing History', icon: History, path: '/recycler/history' },
         { label: 'Facility Settings', icon: Settings, path: '/recycler/settings' },
     ];
@@ -20,9 +22,9 @@ export default function RecyclerLayout() {
                 <div className="p-6">
                     <div className="flex items-center gap-2 mb-1">
                         <Factory className="w-5 h-5 text-orange-400" />
-                        <h2 className="text-lg font-bold text-white">EcoCycle Inc.</h2>
+                        <h2 className="text-lg font-bold text-white truncate">{user?.full_name || 'Recycling Center'}</h2>
                     </div>
-                    <p className="text-xs text-muted-foreground">Authorized Facility #402</p>
+                    <p className="text-xs text-muted-foreground truncate">{user?.organization || 'Authorized Facility #402'}</p>
                 </div>
 
                 <nav className="flex-1 px-4 space-y-2">
