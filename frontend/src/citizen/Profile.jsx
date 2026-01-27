@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
 import {
     User, Mail, Shield, Bell, Settings, LogOut,
@@ -9,6 +11,8 @@ import {
 
 export default function CitizenProfile() {
     const { user, logout } = useAuth();
+    const { setTheme } = useTheme();
+    const { setLanguage, t } = useLanguage();
     const [profile, setProfile] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -27,6 +31,10 @@ export default function CitizenProfile() {
         try {
             const res = await api.get('/profile');
             setProfile(res.data);
+            // Sync global language with profile preference
+            if (res.data.preferences?.settings?.language) {
+                setLanguage(res.data.preferences.settings.language);
+            }
         } catch (err) {
             console.error(err);
             setMessage({ type: 'error', text: 'Failed to load profile data' });
@@ -71,10 +79,10 @@ export default function CitizenProfile() {
     if (isLoading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-emerald-500" /></div>;
 
     const sections = [
-        { id: 'Overview', icon: User, label: 'Overview' },
-        { id: 'Security', icon: Shield, label: 'Security' },
-        { id: 'Notifications', icon: Bell, label: 'Notifications' },
-        { id: 'Settings', icon: Settings, label: 'Settings' },
+        { id: 'Overview', icon: User, label: t.overview },
+        { id: 'Security', icon: Shield, label: t.security },
+        { id: 'Notifications', icon: Bell, label: t.notifications },
+        { id: 'Settings', icon: Settings, label: t.settings },
     ];
 
     return (
@@ -97,7 +105,7 @@ export default function CitizenProfile() {
                             </div>
                             <div className="flex items-center gap-2 text-slate-400 text-xs font-bold bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
                                 <Shield size={14} className="text-emerald-500" />
-                                Verified Account
+                                {t.verifiedAccount}
                             </div>
                         </div>
                     </div>
@@ -110,7 +118,7 @@ export default function CitizenProfile() {
                     }`}>
                     {message.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
                     <p className="text-xs font-bold uppercase tracking-wider flex-1">{message.text}</p>
-                    <button onClick={() => setMessage({ type: '', text: '' })} className="text-[10px] font-black uppercase opacity-50 hover:opacity-100">Dismiss</button>
+                    <button onClick={() => setMessage({ type: '', text: '' })} className="text-[10px] font-black uppercase opacity-50 hover:opacity-100">{t.dismiss}</button>
                 </div>
             )}
 
@@ -132,7 +140,7 @@ export default function CitizenProfile() {
                     ))}
                     <div className="pt-4 border-t border-white/5 mt-4">
                         <button onClick={logout} className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold text-red-500/60 hover:text-red-400 hover:bg-red-500/5 transition-all">
-                            <LogOut size={18} /> Logout
+                            <LogOut size={18} /> {t.logout}
                         </button>
                     </div>
                 </div>
@@ -142,16 +150,16 @@ export default function CitizenProfile() {
                     {activeSection === 'Overview' && (
                         <div className="space-y-8 animate-in fade-in duration-300">
                             <div className="space-y-2">
-                                <h3 className="text-xl font-bold text-white">Account Overview</h3>
-                                <p className="text-sm text-slate-500 uppercase font-black tracking-tighter">Identity Details</p>
+                                <h3 className="text-xl font-bold text-white">{t.accountOverview}</h3>
+                                <p className="text-sm text-slate-500 uppercase font-black tracking-tighter">{t.identityDetails}</p>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="p-6 bg-white/5 border border-white/5 rounded-3xl space-y-2 translate-y-0 hover:-translate-y-1 transition-all">
-                                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Public Avatar</p>
+                                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">{t.publicAvatar}</p>
                                     <p className="text-2xl font-black text-white">{profile?.displayName || 'Citizen'}</p>
                                 </div>
                                 <div className="p-6 bg-white/5 border border-white/5 rounded-3xl space-y-2">
-                                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">User ID</p>
+                                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">{t.userId}</p>
                                     <p className="text-lg font-mono font-bold text-white uppercase">{profile?._id.slice(-12)}</p>
                                 </div>
                             </div>
@@ -161,13 +169,13 @@ export default function CitizenProfile() {
                     {activeSection === 'Security' && (
                         <form onSubmit={handleChangePassword} className="space-y-8 animate-in fade-in duration-300">
                             <div className="space-y-2">
-                                <h3 className="text-xl font-bold text-white">Security Controls</h3>
-                                <p className="text-sm text-slate-500 uppercase font-black tracking-tighter">Update Authorization Credentials</p>
+                                <h3 className="text-xl font-bold text-white">{t.securityControls}</h3>
+                                <p className="text-sm text-slate-500 uppercase font-black tracking-tighter">{t.updateAuth}</p>
                             </div>
 
                             <div className="space-y-4 max-w-md">
                                 <div className="space-y-2">
-                                    <label htmlFor="currentPassword" className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Current Password</label>
+                                    <label htmlFor="currentPassword" className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t.currentPassword}</label>
                                     <div className="relative">
                                         <input
                                             id="currentPassword"
@@ -185,7 +193,7 @@ export default function CitizenProfile() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label htmlFor="newPassword" className="text-[10px] font-black text-slate-500 uppercase tracking-widest">New Password</label>
+                                    <label htmlFor="newPassword" className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t.newPassword}</label>
                                     <input
                                         id="newPassword"
                                         name="newPassword"
@@ -198,7 +206,7 @@ export default function CitizenProfile() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label htmlFor="confirmPassword" className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Confirm New Password</label>
+                                    <label htmlFor="confirmPassword" className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t.confirmPassword}</label>
                                     <input
                                         id="confirmPassword"
                                         name="confirmPassword"
@@ -216,7 +224,7 @@ export default function CitizenProfile() {
                                     className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-black py-4 rounded-2xl shadow-xl shadow-emerald-900/20 transition-all flex items-center justify-center gap-3 mt-4"
                                 >
                                     {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                                    CONFIRM SECURITY UPDATE
+                                    {t.changePassword}
                                 </button>
                             </div>
                         </form>
@@ -225,8 +233,8 @@ export default function CitizenProfile() {
                     {activeSection === 'Notifications' && (
                         <div className="space-y-8 animate-in fade-in duration-300">
                             <div className="space-y-2">
-                                <h3 className="text-xl font-bold text-white">Notification Matrix</h3>
-                                <p className="text-sm text-slate-500 uppercase font-black tracking-tighter">Communication Channels</p>
+                                <h3 className="text-xl font-bold text-white">{t.notifications}</h3>
+                                <p className="text-sm text-slate-500 uppercase font-black tracking-tighter">{t.preferences}</p>
                             </div>
 
                             <div className="space-y-4">
@@ -236,8 +244,8 @@ export default function CitizenProfile() {
                                             <Mail size={24} />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-white">Email Handlers</h4>
-                                            <p className="text-xs text-slate-500">Lifecycle updates and rewards summaries.</p>
+                                            <h4 className="font-bold text-white">{t.emailHandlers}</h4>
+                                            <p className="text-xs text-slate-500">{t.notificationsDesc}</p>
                                         </div>
                                     </div>
                                     <label className="relative inline-flex items-center cursor-pointer">
@@ -262,8 +270,8 @@ export default function CitizenProfile() {
                                             <Smartphone size={24} />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-white">SMS Overlays</h4>
-                                            <p className="text-xs text-slate-500">Real-time pickup SMS alerts.</p>
+                                            <h4 className="font-bold text-white">{t.smsOverlays}</h4>
+                                            <p className="text-xs text-slate-500">{t.smsDesc}</p>
                                         </div>
                                     </div>
                                     <label className="relative inline-flex items-center cursor-pointer">
@@ -288,58 +296,36 @@ export default function CitizenProfile() {
                     {activeSection === 'Settings' && (
                         <div className="space-y-8 animate-in fade-in duration-300">
                             <div className="space-y-2">
-                                <h3 className="text-xl font-bold text-white">Interface Overlays</h3>
-                                <p className="text-sm text-slate-500 uppercase font-black tracking-tighter">Personalization Framework</p>
+                                <h3 className="text-xl font-bold text-white">{t.interfaceOverlays}</h3>
+                                <p className="text-sm text-slate-500 uppercase font-black tracking-tighter">{t.personalizationFramework}</p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="p-8 bg-white/5 rounded-[40px] border border-white/5 space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-orange-500/10 rounded-xl text-orange-500">
-                                            {profile?.preferences?.settings?.theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
-                                        </div>
-                                        <h4 className="font-bold text-white">Visual Mode</h4>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        {['dark', 'light'].map(t => (
-                                            <button
-                                                key={t}
-                                                onClick={() => handleUpdatePreferences({
-                                                    ...profile.preferences,
-                                                    settings: { ...profile.preferences.settings, theme: t }
-                                                })}
-                                                className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${(profile?.preferences?.settings?.theme || 'dark') === t
-                                                    ? 'bg-orange-500 text-white shadow-xl shadow-orange-900/20'
-                                                    : 'bg-white/5 text-slate-500 hover:text-white'
-                                                    }`}
-                                            >
-                                                {t}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="p-8 bg-white/5 rounded-[40px] border border-white/5 space-y-6">
+                            <div className="grid grid-cols-1 gap-6">
+                                <div className="p-8 bg-white/5 rounded-[40px] border border-white/5 space-y-6 max-w-md">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-500">
                                             <Globe size={20} />
                                         </div>
-                                        <h4 id="lang-label" className="font-bold text-white">Framework Lang</h4>
+                                        <h4 id="lang-label" className="font-bold text-white">{t.frameworkLang}</h4>
                                     </div>
                                     <select
                                         id="settings-language"
                                         name="settings_language"
                                         aria-labelledby="lang-label"
                                         value={profile?.preferences?.settings?.language}
-                                        onChange={(e) => handleUpdatePreferences({
-                                            ...profile.preferences,
-                                            settings: { ...profile.preferences.settings, language: e.target.value }
-                                        })}
-                                        className="w-full bg-slate-900 border border-white/10 rounded-2xl px-4 py-3 text-xs font-bold text-white outline-none focus:border-emerald-500"
+                                        onChange={(e) => {
+                                            const newLang = e.target.value;
+                                            setLanguage(newLang); // Update Global Context
+                                            handleUpdatePreferences({
+                                                ...profile.preferences,
+                                                settings: { ...profile.preferences.settings, language: newLang }
+                                            });
+                                        }}
+                                        className="w-full bg-slate-900 border border-white/10 rounded-2xl px-4 py-3 text-xs font-bold text-white outline-none focus:border-emerald-500 appearance-none cursor-pointer"
                                     >
-                                        <option value="en">English (US)</option>
-                                        <option value="es">Español</option>
-                                        <option value="fr">Français</option>
+                                        <option value="en">{t.english}</option>
+                                        <option value="hi">{t.hindi}</option>
+                                        <option value="pa">{t.punjabi}</option>
                                     </select>
                                 </div>
                             </div>

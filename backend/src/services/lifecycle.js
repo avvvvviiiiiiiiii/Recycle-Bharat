@@ -38,7 +38,7 @@ class LifecycleService {
 
             // 1. Fetch Current Device State with Lock
             const deviceRes = await client.query(
-                'SELECT current_state, owner_id FROM devices WHERE id = $1 FOR UPDATE',
+                'SELECT current_state, owner_id, device_uid FROM devices WHERE id = $1 FOR UPDATE',
                 [deviceId]
             );
 

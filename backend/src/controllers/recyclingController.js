@@ -126,16 +126,8 @@ class RecyclingController {
                 proof_metadata
             );
 
-            // 2. Issue Reward to Citizen
-            // We need the owner_id of the device. Let's fetch it first or use a join.
-            const deviceRes = await pool.query('SELECT owner_id FROM devices WHERE id = $1', [deviceId]);
-            if (deviceRes.rows.length > 0) {
-                const ownerId = deviceRes.rows[0].owner_id;
-                await IncentiveService.issueReward({ userId: ownerId, deviceId });
-            }
-
             res.json({
-                message: 'Device recycling marked as complete and reward issued',
+                message: 'Device recycling marked as complete',
                 result
             });
 
@@ -162,6 +154,13 @@ class RecyclingController {
                 req.user,
                 { handover_duc: duc }
             );
+
+            // 2. Issue Reward to Citizen immediately upon reaching facility
+            const deviceRes = await pool.query('SELECT owner_id FROM devices WHERE id = $1', [deviceId]);
+            if (deviceRes.rows.length > 0) {
+                const ownerId = deviceRes.rows[0].owner_id;
+                await IncentiveService.issueReward({ userId: ownerId, deviceId });
+            }
 
             // 2. Find and update collector assignment
             // We need to mark it as COMPLETED when delivered

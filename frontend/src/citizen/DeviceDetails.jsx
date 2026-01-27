@@ -6,12 +6,14 @@ import {
     ArrowLeft, CheckCircle2, Circle, Clock, Truck, Recycle,
     ShieldAlert, Eye, EyeOff, Loader2, Info, Smartphone, Lock, RefreshCw
 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function DeviceDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { data: device, isLoading, error } = useDevice(id);
     const { requestRecycle, isRecycling, revealDuc, isRevealing } = useDevices();
+    const { t } = useLanguage();
 
     const [revealedDuc, setRevealedDuc] = useState(null);
 
@@ -40,21 +42,21 @@ export default function DeviceDetails() {
     );
 
     const timeline = [
-        { state: 'ACTIVE', label: 'Registered', completed: !!device.createdAt },
-        { state: 'RECYCLING_REQUESTED', label: 'Recycle Requested', completed: ['RECYCLING_REQUESTED', 'COLLECTOR_ASSIGNED', 'COLLECTED', 'DELIVERED_TO_RECYCLER', 'RECYCLED'].includes(device.status) },
-        { state: 'COLLECTOR_ASSIGNED', label: 'Agent Dispatched', completed: ['COLLECTOR_ASSIGNED', 'COLLECTED', 'DELIVERED_TO_RECYCLER', 'RECYCLED'].includes(device.status) },
-        { state: 'COLLECTED', label: 'Handled Over to Agent', completed: ['COLLECTED', 'DELIVERED_TO_RECYCLER', 'RECYCLED'].includes(device.status) },
-        { state: 'DELIVERED_TO_RECYCLER', label: 'Reached Facility', completed: ['DELIVERED_TO_RECYCLER', 'RECYCLED'].includes(device.status) },
-        { state: 'RECYCLED', label: 'Fully Recycled', completed: device.status === 'RECYCLED' },
+        { state: 'ACTIVE', label: t.registered, completed: !!device.createdAt },
+        { state: 'RECYCLING_REQUESTED', label: t.recycleCalled, completed: ['RECYCLING_REQUESTED', 'COLLECTOR_ASSIGNED', 'COLLECTED', 'DELIVERED_TO_RECYCLER', 'RECYCLED'].includes(device.status) },
+        { state: 'COLLECTOR_ASSIGNED', label: t.agentDispatched, completed: ['COLLECTOR_ASSIGNED', 'COLLECTED', 'DELIVERED_TO_RECYCLER', 'RECYCLED'].includes(device.status) },
+        { state: 'COLLECTED', label: t.inTransit, completed: ['COLLECTED', 'DELIVERED_TO_RECYCLER', 'RECYCLED'].includes(device.status) },
+        { state: 'DELIVERED_TO_RECYCLER', label: t.reachedFacility, completed: ['DELIVERED_TO_RECYCLER', 'RECYCLED'].includes(device.status) },
+        { state: 'RECYCLED', label: t.fullyRecycling, completed: device.status === 'RECYCLED' },
     ];
 
     const statusLabels = {
-        COLLECTED: 'Handed over to Agent',
-        DELIVERED_TO_RECYCLER: 'Reached Facility',
-        COLLECTOR_ASSIGNED: 'Agent Dispatched',
-        ACTIVE: 'Active Inventory',
-        RECYCLING_REQUESTED: 'Recycle Called',
-        RECYCLED: 'Recycled'
+        COLLECTED: t.inTransit,
+        DELIVERED_TO_RECYCLER: t.reachedFacility,
+        COLLECTOR_ASSIGNED: t.agentDispatched,
+        ACTIVE: t.activeInventory,
+        RECYCLING_REQUESTED: t.recycleCalled,
+        RECYCLED: t.fullyRecycling
     };
 
     return (
@@ -62,11 +64,11 @@ export default function DeviceDetails() {
 
             <div className="flex justify-between items-center">
                 <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="text-slate-500 hover:text-white pl-0 gap-2 transition-colors">
-                    <ArrowLeft className="w-4 h-4" /> Back to My Devices
+                    <ArrowLeft className="w-4 h-4" /> {t.backToMyDevices}
                 </Button>
                 {device.isTerminated && (
                     <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                        Archived Profile
+                        {t.archivedProfile}
                     </div>
                 )}
             </div>
@@ -108,7 +110,7 @@ export default function DeviceDetails() {
                 <div className="lg:col-span-2 space-y-8">
                     <div className="bg-card/30 border border-white/5 rounded-3xl p-8 shadow-xl">
                         <h3 className="text-lg font-bold text-white mb-8 flex items-center gap-2">
-                            Lifecycle Tracking History
+                            {t.activityHistory}
                         </h3>
                         <div className="space-y-10 relative pl-4">
                             <div className="absolute left-[31px] top-2 bottom-2 w-0.5 bg-slate-800/50" />
@@ -123,7 +125,7 @@ export default function DeviceDetails() {
                                             {step.label}
                                         </div>
                                         <div className="text-xs text-slate-500 mt-1 uppercase tracking-tighter font-medium">
-                                            {step.completed ? 'Verified Entry' : 'Pending Stage'}
+                                            {step.completed ? t.verifiedEntry : t.pendingStage}
                                         </div>
                                     </div>
                                 </div>
@@ -136,9 +138,9 @@ export default function DeviceDetails() {
                             <ShieldAlert className="w-6 h-6 text-orange-400" />
                         </div>
                         <div className="space-y-1">
-                            <h4 className="font-bold text-white">Proof of Possession Requirement</h4>
+                            <h4 className="font-bold text-white">Requirement</h4>
                             <p className="text-xs text-slate-400 leading-relaxed">
-                                To prevent fraud, you must provide your **Device Unique Code (DUC)** to the collector during physical handover. Only share this code when the collector is physically present at your location.
+                                {t.proofNotice}
                             </p>
                         </div>
                     </div>
@@ -155,7 +157,7 @@ export default function DeviceDetails() {
                         </div>
 
                         <div className="space-y-2">
-                            <h3 className="text-xl font-bold text-white tracking-tight">Handover Code</h3>
+                            <h3 className="text-xl font-bold text-white tracking-tight">{t.handoverCode}</h3>
                             <p className="text-xs text-slate-500 px-4">
                                 {device.status === 'ACTIVE'
                                     ? 'Locked until recycling is requested.'
@@ -191,7 +193,7 @@ export default function DeviceDetails() {
                                     }`}
                             >
                                 {isRevealing ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : ((revealedDuc || device.currentDuc) ? <RefreshCw className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />)}
-                                {device.status === 'ACTIVE' ? 'Code Unavailable' : (revealedDuc || device.currentDuc) ? 'Regenerate Code' : 'Reveal Pickup Code'}
+                                {device.status === 'ACTIVE' ? 'Code Unavailable' : (revealedDuc || device.currentDuc) ? t.regenerateCode : t.revealPickupCode}
                             </Button>
                         </div>
 
@@ -206,7 +208,7 @@ export default function DeviceDetails() {
                     {device.status === 'ACTIVE' && (
                         <div className="bg-emerald-600/10 border border-emerald-500/20 rounded-3xl p-8 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-500">
                             <div className="space-y-2 text-center">
-                                <h4 className="text-lg font-bold text-white uppercase tracking-tighter">Initiate Pickup</h4>
+                                <h4 className="text-lg font-bold text-white uppercase tracking-tighter">{t.initiatePickup}</h4>
                                 <p className="text-xs text-slate-400">Request an authorized recycling unit to pick up your device.</p>
                             </div>
 
@@ -214,6 +216,7 @@ export default function DeviceDetails() {
                                 deviceId={device._id}
                                 onConfirm={(data) => requestRecycle({ deviceId: device._id, ...data })}
                                 isLoading={isRecycling}
+                                t={t}
                             />
                         </div>
                     )}
@@ -237,7 +240,7 @@ export default function DeviceDetails() {
     );
 }
 
-const RecycleDialog = ({ deviceId, onConfirm, isLoading }) => {
+const RecycleDialog = ({ deviceId, onConfirm, isLoading, t }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [address, setAddress] = useState('');
     const [date, setDate] = useState('');
@@ -264,17 +267,17 @@ const RecycleDialog = ({ deviceId, onConfirm, isLoading }) => {
             className='w-full h-12 rounded-2xl font-black shadow-emerald-900/40 bg-emerald-600 hover:bg-emerald-500 text-white'
         >
             <Recycle className='w-4 h-4 mr-2' />
-            CALL FOR RECYCLING
+            {t.callForRecycling}
         </Button>
     );
 
     return (
         <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200'>
             <div className='bg-slate-900 border border-slate-700 p-6 rounded-2xl w-full max-w-md space-y-4'>
-                <h3 className='text-xl font-bold text-white'>Confirm Pickup Details</h3>
+                <h3 className='text-xl font-bold text-white'>{t.confirmPickupDetails}</h3>
                 <form onSubmit={handleSubmit} className='space-y-4'>
                     <div>
-                        <label htmlFor="pickup_address_input" className='text-sm text-slate-400'>Pickup Address</label>
+                        <label htmlFor="pickup_address_input" className='text-sm text-slate-400'>{t.pickupAddress}</label>
                         <textarea
                             id="pickup_address_input"
                             name="pickup_address_input"
@@ -285,7 +288,7 @@ const RecycleDialog = ({ deviceId, onConfirm, isLoading }) => {
                         />
                     </div>
                     <div>
-                        <label htmlFor="pickup_date_input" className='text-sm text-slate-400'>Preferred Date</label>
+                        <label htmlFor="pickup_date_input" className='text-sm text-slate-400'>{t.preferredDate}</label>
                         <input
                             id="pickup_date_input"
                             name="pickup_date_input"
@@ -297,9 +300,9 @@ const RecycleDialog = ({ deviceId, onConfirm, isLoading }) => {
                         />
                     </div>
                     <div className='flex gap-3 pt-2'>
-                        <Button type='button' variant='ghost' onClick={() => setIsOpen(false)} className='flex-1 text-slate-400'>Cancel</Button>
+                        <Button type='button' variant='ghost' onClick={() => setIsOpen(false)} className='flex-1 text-slate-400'>{t.cancel}</Button>
                         <Button type='submit' disabled={isLoading} className='flex-1 bg-emerald-600 hover:bg-emerald-500 text-white'>
-                            {isLoading ? 'Processing...' : 'Confirm Request'}
+                            {isLoading ? t.processing : t.confirmRequest}
                         </Button>
                     </div>
                 </form>

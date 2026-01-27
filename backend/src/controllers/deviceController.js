@@ -11,11 +11,12 @@ class DeviceController {
 
         try {
             // Generate a simpler unique ID for the device public ID if not provided
-            const device_uid = serial_number || `DEV-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+            // Generate a simpler unique ID for the device public ID if not provided
+            const device_uid = crypto.randomUUID();
 
             const newDevice = await pool.query(
                 `INSERT INTO devices (owner_id, device_type, brand, model, purchase_year, serial_number, device_uid, device_uid_origin, current_state) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, 'GENERATED', 'ACTIVE') 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, 'MANUFACTURER', 'ACTIVE') 
                 RETURNING *`,
                 [owner_id, device_type, brand, model, purchase_year, serial_number, device_uid]
             );

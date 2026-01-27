@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useDevices } from '../hooks/useDevices';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 const RegisterDevice = () => {
     const { registerDevice, isRegistering } = useDevices();
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [formData, setFormData] = useState({
         model: '',
         brand: '',
@@ -34,10 +36,10 @@ const RegisterDevice = () => {
                 onClick={() => navigate('/citizen')}
                 className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mb-6"
             >
-                <ArrowLeft size={16} /> Back to Dashboard
+                <ArrowLeft size={16} /> {t.backToDashboard}
             </button>
 
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">Register Device</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.registerDevice}</h1>
 
             {error && (
                 <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
@@ -47,7 +49,7 @@ const RegisterDevice = () => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label htmlFor="device_type" className="block text-sm font-medium text-gray-700 mb-1">Device Type</label>
+                    <label htmlFor="device_type" className="block text-sm font-medium text-gray-700 mb-1">{t.deviceType}</label>
                     <select
                         id="device_type"
                         name="device_type"
@@ -65,7 +67,7 @@ const RegisterDevice = () => {
                 </div>
 
                 <div>
-                    <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                    <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">{t.brand}</label>
                     <input
                         id="brand"
                         name="brand"
@@ -79,7 +81,7 @@ const RegisterDevice = () => {
                 </div>
 
                 <div>
-                    <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                    <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">{t.model}</label>
                     <input
                         id="model"
                         name="model"
@@ -94,7 +96,7 @@ const RegisterDevice = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label htmlFor="purchase_year" className="block text-sm font-medium text-gray-700 mb-1">Purchase Year</label>
+                        <label htmlFor="purchase_year" className="block text-sm font-medium text-gray-700 mb-1">{t.purchaseYear}</label>
                         <input
                             id="purchase_year"
                             name="purchase_year"
@@ -105,7 +107,7 @@ const RegisterDevice = () => {
                         />
                     </div>
                     <div>
-                        <label htmlFor="serial_number" className="block text-sm font-medium text-gray-700 mb-1">Serial Number (Optional)</label>
+                        <label htmlFor="serial_number" className="block text-sm font-medium text-gray-700 mb-1">{t.serialNumber}</label>
                         <input
                             id="serial_number"
                             name="serial_number"
@@ -122,7 +124,7 @@ const RegisterDevice = () => {
                     disabled={isRegistering}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg transition-colors flex justify-center items-center gap-2 mt-4"
                 >
-                    {isRegistering ? <Loader2 className="animate-spin" size={20} /> : 'Register Device'}
+                    {isRegistering ? <Loader2 className="animate-spin" size={20} /> : t.registerDevice}
                 </button>
             </form>
         </div>

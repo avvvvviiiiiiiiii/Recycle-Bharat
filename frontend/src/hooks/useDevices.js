@@ -20,7 +20,7 @@ export const useDevices = () => {
                 model: d.model,
                 brand: d.brand,
                 description: `${d.brand} ${d.device_type} (${d.purchase_year})`,
-                recycleNumber: d.device_uid_origin === 'MANUFACTURER' ? d.device_uid : null,
+                recycleNumber: d.serial_number || null,
                 isTerminated: d.current_state === 'RECYCLED',
                 createdAt: d.created_at
             }));
@@ -85,7 +85,7 @@ export const useDevice = (id) => {
                 device_type: device.device_type,
                 description: `${device.brand} ${device.device_type}`,
                 purchase_year: device.purchase_year,
-                recycleNumber: device.device_uid_origin === 'MANUFACTURER' ? device.device_uid : null,
+                recycleNumber: device.serial_number || null,
                 createdAt: device.created_at
             };
         },

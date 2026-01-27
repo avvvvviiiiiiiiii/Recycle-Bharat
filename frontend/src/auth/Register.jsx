@@ -3,11 +3,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Recycle, ArrowRight } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 import api from '@/services/api';
 
 export default function Register() {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [formData, setFormData] = useState({ full_name: '', email: '', password: '', role: 'citizen' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -48,8 +50,8 @@ export default function Register() {
                             <Recycle className="w-5 h-5 text-emerald-400" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-white leading-tight">Create Citizen Account</h1>
-                            <p className="text-xs text-slate-500 font-medium">Citizen Registration Portal</p>
+                            <h1 className="text-2xl font-bold text-white leading-tight">{t.createCitizenAccount}</h1>
+                            <p className="text-xs text-slate-500 font-medium">{t.citizenRegistrationPortal}</p>
                         </div>
                     </div>
 
@@ -61,7 +63,7 @@ export default function Register() {
 
                     <form onSubmit={handleRegister} className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300 ml-1">Full Name</label>
+                            <label className="text-sm font-medium text-slate-300 ml-1">{t.fullName}</label>
                             <Input
                                 type="text"
                                 id="full_name"
@@ -75,7 +77,7 @@ export default function Register() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300 ml-1">Email Address</label>
+                            <label className="text-sm font-medium text-slate-300 ml-1">{t.emailAddress}</label>
                             <Input
                                 type="email"
                                 id="email"
@@ -90,7 +92,7 @@ export default function Register() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300 ml-1">Set Password</label>
+                            <label className="text-sm font-medium text-slate-300 ml-1">{t.setPassword}</label>
                             <Input
                                 type="password"
                                 id="password"
@@ -109,25 +111,25 @@ export default function Register() {
                             className="w-full mt-4 h-11 text-base group"
                             disabled={loading}
                         >
-                            {loading ? 'Creating Account...' : 'Register Citizen Account'}
+                            {loading ? t.creatingAccount : t.registerCitizenAccount}
                             {!loading && <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                         </Button>
                     </form>
 
                     <div className="mt-8 pt-6 border-t border-white/5 space-y-4 text-center">
                         <div className="text-sm text-slate-400">
-                            Already have an identity?{' '}
+                            {t.alreadyHaveIdentity}{' '}
                             <Link to="/login" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
-                                Sign in here
+                                {t.signInHere}
                             </Link>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <Link to="/register/recycler" className="text-[10px] uppercase tracking-widest font-bold text-slate-500 hover:text-orange-400 transition-colors py-2 px-1 border border-white/5 rounded-lg hover:border-orange-500/20">
-                                Register Facility
+                                {t.registerFacility}
                             </Link>
                             <Link to="/register/collector" className="text-[10px] uppercase tracking-widest font-bold text-slate-500 hover:text-blue-400 transition-colors py-2 px-1 border border-white/5 rounded-lg hover:border-blue-500/20">
-                                Register Agent
+                                {t.registerAgent}
                             </Link>
                         </div>
                     </div>

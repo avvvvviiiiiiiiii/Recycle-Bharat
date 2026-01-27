@@ -46,6 +46,12 @@
     --foreground: var(--color-foreground-hsl);
   }
 
+  :root.light {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    /* Optional: Override card backgrounds inside .glass-panel if needed */
+  }
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));

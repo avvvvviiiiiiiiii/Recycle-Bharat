@@ -60,7 +60,16 @@ class IncentiveService {
              ORDER BY i.issued_at DESC`,
             [userId]
         );
-        return res.rows;
+        return res.rows.map(r => ({
+            _id: r.id,
+            amount: r.amount,
+            status: r.status,
+            createdAt: r.issued_at,
+            deviceId: {
+                model: r.model || 'Unknown Device',
+                uid: r.uid || 'N/A'
+            }
+        }));
     }
 }
 
