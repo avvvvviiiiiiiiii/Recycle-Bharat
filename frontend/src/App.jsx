@@ -1,7 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './auth/Login';
+import Login from './auth/Login'; // Landing page with role cards
+import RoleLogin from './pages/auth/Login'; // Role-specific login page
 import Register from './auth/Register';
 import RecyclerRegister from './auth/RecyclerRegister';
 import CollectorRegister from './auth/CollectorRegister';
@@ -44,85 +46,87 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-emerald-500/30">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Navigate to="/login" replace />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/register/recycler" element={<RecyclerRegister />} />
-              <Route path="/register/collector" element={<CollectorRegister />} />
+      <LanguageProvider>
+        <AuthProvider>
+          <Router>
+            <div className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-emerald-500/30">
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Login />} /> {/* Landing page with role cards */}
+                <Route path="/login" element={<RoleLogin />} /> {/* Role-specific login */}
+                <Route path="/register" element={<Register />} />
+                <Route path="/register/recycler" element={<RecyclerRegister />} />
+                <Route path="/register/collector" element={<CollectorRegister />} />
 
-              {/* Citizen Routes */}
-              <Route path="/citizen" element={
-                <ProtectedRoute allowedRoles={['CITIZEN']}>
-                  <CitizenLayout />
-                </ProtectedRoute>
-              }>
-                <Route path="dashboard" element={<CitizenDashboard />} />
-                <Route path="register" element={<RegisterDevice />} />
-                <Route path="rewards" element={<CitizenRewards />} />
-                <Route path="device/:id" element={<DeviceDetails />} />
-                <Route path="activity" element={<CitizenActivity />} />
-                <Route path="profile" element={<CitizenProfile />} />
-                <Route index element={<Navigate to="dashboard" replace />} />
-              </Route>
+                {/* Citizen Routes */}
+                <Route path="/citizen" element={
+                  <ProtectedRoute allowedRoles={['CITIZEN']}>
+                    <CitizenLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route path="dashboard" element={<CitizenDashboard />} />
+                  <Route path="register" element={<RegisterDevice />} />
+                  <Route path="rewards" element={<CitizenRewards />} />
+                  <Route path="device/:id" element={<DeviceDetails />} />
+                  <Route path="activity" element={<CitizenActivity />} />
+                  <Route path="profile" element={<CitizenProfile />} />
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                </Route>
 
-              {/* Collector Routes */}
-              <Route path="/collector" element={
-                <ProtectedRoute allowedRoles={['COLLECTOR']}>
-                  <CollectorLayout />
-                </ProtectedRoute>
-              }>
-                <Route path="dashboard" element={<CollectorDashboard />} />
-                <Route path="pickup/:id" element={<PickupDetails />} />
-                <Route path="history" element={<CollectorHistory />} />
-                <Route path="zone" element={<CollectorZone />} />
-                <Route index element={<Navigate to="dashboard" replace />} />
-              </Route>
+                {/* Collector Routes */}
+                <Route path="/collector" element={
+                  <ProtectedRoute allowedRoles={['COLLECTOR']}>
+                    <CollectorLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route path="dashboard" element={<CollectorDashboard />} />
+                  <Route path="pickup/:id" element={<PickupDetails />} />
+                  <Route path="history" element={<CollectorHistory />} />
+                  <Route path="zone" element={<CollectorZone />} />
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                </Route>
 
-              {/* Recycler Routes */}
-              <Route path="/recycler" element={
-                <ProtectedRoute allowedRoles={['RECYCLER']}>
-                  <RecyclerLayout />
-                </ProtectedRoute>
-              }>
-                <Route path="dashboard" element={<RecyclerDashboard />} />
-                <Route path="assignments" element={<RecyclerAssignments />} />
-                <Route path="history" element={<RecyclerHistory />} />
-                <Route path="settings" element={<RecyclerSettings />} />
-                <Route path="request/:id" element={<RequestDetails />} />
-                <Route index element={<Navigate to="dashboard" replace />} />
-              </Route>
+                {/* Recycler Routes */}
+                <Route path="/recycler" element={
+                  <ProtectedRoute allowedRoles={['RECYCLER']}>
+                    <RecyclerLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route path="dashboard" element={<RecyclerDashboard />} />
+                  <Route path="assignments" element={<RecyclerAssignments />} />
+                  <Route path="history" element={<RecyclerHistory />} />
+                  <Route path="settings" element={<RecyclerSettings />} />
+                  <Route path="request/:id" element={<RequestDetails />} />
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                </Route>
 
-              {/* Government Routes */}
-              <Route path="/government" element={
-                <ProtectedRoute allowedRoles={['GOVT']}>
-                  <GovernmentLayout />
-                </ProtectedRoute>
-              }>
-                <Route path="dashboard" element={<GovernmentDashboard />} />
-                <Route index element={<Navigate to="dashboard" replace />} />
-              </Route>
+                {/* Government Routes */}
+                <Route path="/government" element={
+                  <ProtectedRoute allowedRoles={['GOVT']}>
+                    <GovernmentLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route path="dashboard" element={<GovernmentDashboard />} />
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                </Route>
 
-              {/* Admin Routes */}
-              <Route path="/admin" element={
-                <ProtectedRoute allowedRoles={['ADMIN']}>
-                  <AdminLayout />
-                </ProtectedRoute>
-              }>
-                <Route path="dashboard" element={<AdminDashboard />} />
-                <Route index element={<Navigate to="dashboard" replace />} />
-              </Route>
+                {/* Admin Routes */}
+                <Route path="/admin" element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route path="dashboard" element={<AdminDashboard />} />
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                </Route>
 
-              {/* Fallback */}
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
-          </div>
-        </Router>
-      </AuthProvider>
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </Routes>
+            </div>
+          </Router>
+        </AuthProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
