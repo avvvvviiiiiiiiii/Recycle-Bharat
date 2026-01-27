@@ -21,7 +21,8 @@ export const useDevices = () => {
                 brand: d.brand,
                 description: `${d.brand} ${d.device_type} (${d.purchase_year})`,
                 recycleNumber: d.device_uid_origin === 'MANUFACTURER' ? d.device_uid : null,
-                isTerminated: d.current_state === 'RECYCLED'
+                isTerminated: d.current_state === 'RECYCLED',
+                createdAt: d.created_at
             }));
         },
     });
@@ -32,8 +33,9 @@ export const useDevices = () => {
             const res = await api.post('/devices', deviceData);
             return res.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries(['my-devices']);
+        onSuccess: async () => {
+            console.log('[useDevices] Invalidating my-devices after registration...');
+            await queryClient.invalidateQueries({ queryKey: ['my-devices'] });
         },
     });
 
@@ -43,9 +45,10 @@ export const useDevices = () => {
             const res = await api.post(`/devices/${deviceId}/recycle`, data);
             return res.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries(['my-devices']);
-            queryClient.invalidateQueries(['device']);
+        onSuccess: async () => {
+            console.log('[useDevices] Invalidating queries after recycling request...');
+            await queryClient.invalidateQueries({ queryKey: ['my-devices'] });
+            await queryClient.invalidateQueries({ queryKey: ['device'] });
         },
     });
 
@@ -57,6 +60,10 @@ export const useDevices = () => {
         isRegistering: registerMutation.isPending,
         requestRecycle: recycleMutation.mutateAsync,
         isRecycling: recycleMutation.isPending,
+        revealDuc: async (deviceId) => {
+            const res = await api.get(`/devices/${deviceId}/duc`);
+            return res.data;
+        }
     };
 };
 
@@ -78,7 +85,8 @@ export const useDevice = (id) => {
                 device_type: device.device_type,
                 description: `${device.brand} ${device.device_type}`,
                 purchase_year: device.purchase_year,
-                recycleNumber: device.device_uid_origin === 'MANUFACTURER' ? device.device_uid : null
+                recycleNumber: device.device_uid_origin === 'MANUFACTURER' ? device.device_uid : null,
+                createdAt: device.created_at
             };
         },
         enabled: !!id

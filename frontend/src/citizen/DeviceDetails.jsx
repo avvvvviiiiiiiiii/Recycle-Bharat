@@ -242,15 +242,20 @@ const RecycleDialog = ({ deviceId, onConfirm, isLoading }) => {
     const [address, setAddress] = useState('');
     const [date, setDate] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onConfirm({
-            pickup_address: address,
-            preferred_date: date,
-            pickup_latitude: 12.9716, // Mock for now 
-            pickup_longitude: 77.5946
-        });
-        setIsOpen(false);
+        try {
+            await onConfirm({
+                pickup_address: address,
+                preferred_date: date,
+                pickup_latitude: 12.9716, // Mock for now 
+                pickup_longitude: 77.5946
+            });
+            setIsOpen(false);
+        } catch (err) {
+            console.error("Recycling request failed in dialog:", err);
+            // Ideally notify user here
+        }
     };
 
     if (!isOpen) return (

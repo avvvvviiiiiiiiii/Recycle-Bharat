@@ -87,8 +87,8 @@ class LifecycleService {
             await client.query(
                 `INSERT INTO lifecycle_events 
                 (device_id, from_state, to_state, triggered_by_user_id, event_type, metadata) 
-                VALUES ($1, $2, $3, $4, 'STATE_TRANSITION', $5)`,
-                [deviceId, currentState, newState, user.id, metadata]
+                VALUES ($1, $2, $3, $4, 'STATUS_CHANGE', $5)`,
+                [deviceId, currentState, newState, user.id, JSON.stringify({ ...metadata, uid: deviceRes.rows[0].device_uid || 'UNKNOWN', oldStatus: currentState, newStatus: newState })]
             );
 
             await client.query('COMMIT');

@@ -11,5 +11,6 @@ router.use(authenticate);
 router.post('/', authorize(['CITIZEN']), DeviceController.registerDevice);
 router.get('/', authorize(['CITIZEN']), DeviceController.getMyDevices);
 router.post('/:id/recycle', authorize(['CITIZEN']), DeviceController.requestRecycling);
+router.get('/:id/duc', authorize(['CITIZEN']), DeviceController.revealDeviceDUC);
 
 module.exports = router;

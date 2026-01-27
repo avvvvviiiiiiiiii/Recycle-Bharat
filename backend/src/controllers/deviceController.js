@@ -1,5 +1,6 @@
 const { pool } = require('../config/db');
 const LifecycleService = require('../services/lifecycle');
+const crypto = require('crypto');
 
 class DeviceController {
 
@@ -9,19 +10,20 @@ class DeviceController {
         const owner_id = req.user.id;
 
         try {
+            // Generate a simpler unique ID for the device public ID if not provided
+            const device_uid = serial_number || `DEV-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+
             const newDevice = await pool.query(
-                `INSERT INTO devices (owner_id, device_type, brand, model, purchase_year, serial_number, current_state) 
-                VALUES ($1, $2, $3, $4, $5, $6, 'ACTIVE') 
+                `INSERT INTO devices (owner_id, device_type, brand, model, purchase_year, serial_number, device_uid, device_uid_origin, current_state) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, 'GENERATED', 'ACTIVE') 
                 RETURNING *`,
-                [owner_id, device_type, brand, model, purchase_year, serial_number]
+                [owner_id, device_type, brand, model, purchase_year, serial_number, device_uid]
             );
 
-            // Log initial state in audit trail (Implicitly done? No, manual insert needed for creation or just rely on state? 
-            // Better to log creation event.)
             await pool.query(
-                `INSERT INTO lifecycle_events (device_id, to_state, triggered_by_user_id, event_type)
-                VALUES ($1, 'ACTIVE', $2, 'DEVICE_REGISTRATION')`,
-                [newDevice.rows[0].id, owner_id]
+                `INSERT INTO lifecycle_events (device_id, to_state, triggered_by_user_id, event_type, metadata)
+                VALUES ($1, 'ACTIVE', $2, 'DEVICE_REGISTERED', $3)`,
+                [newDevice.rows[0].id, owner_id, JSON.stringify({ uid: newDevice.rows[0].device_uid, model: model })]
             );
 
             res.status(201).json({
@@ -30,7 +32,7 @@ class DeviceController {
             });
         } catch (err) {
             console.error(err);
-            res.status(500).json({ message: 'Server error' });
+            res.status(500).json({ message: 'Server error', error: err.message });
         }
     }
 
@@ -54,7 +56,7 @@ class DeviceController {
         const { pickup_address, pickup_latitude, pickup_longitude, preferred_date } = req.body;
 
         try {
-            // 1. Lifecycle Transition (ACTIVE -> RECYCLING_REQUESTED)
+            // 1. Lifecycle Transition
             const transitionResult = await LifecycleService.transitionState(
                 deviceId,
                 'RECYCLING_REQUESTED',
@@ -62,12 +64,6 @@ class DeviceController {
             );
 
             // 2. Create Recycling Request Record
-            // Note: This ideally should be in the SAME transaction as LifecycleService, 
-            // but for MVP splitting is acceptable if handled carefully. 
-            // Enhanced: We should update LifecycleService to accept a callback or handle request creation?
-            // For now, we simple insert. If this fails, we have a state mismatch (Issue!).
-            // Fix: We'll wrap this in a try-catch and revert state if request creation fails.
-
             const newRequest = await pool.query(
                 `INSERT INTO recycling_requests 
                 (device_id, citizen_id, pickup_address, pickup_latitude, pickup_longitude, preferred_date, status)
@@ -75,6 +71,11 @@ class DeviceController {
                 RETURNING *`,
                 [deviceId, req.user.id, pickup_address, pickup_latitude, pickup_longitude, preferred_date]
             );
+
+            // 3. Generate initial DUC automatically upon request (Optional, or wait for explicit reveal)
+            // Ideally, we can generate it now to ensure it exists.
+            const duc = crypto.randomInt(100000, 999999).toString();
+            await pool.query('UPDATE devices SET current_duc = $1 WHERE id = $2', [duc, deviceId]);
 
             res.json({
                 message: 'Recycling requested successfully',
@@ -84,10 +85,55 @@ class DeviceController {
 
         } catch (err) {
             console.error(err);
-            // If it's our FSM error
             if (err.code === 'FSM_VIOLATION' || err.code === 'RBAC_VIOLATION' || err.code === 'OWNERSHIP_VIOLATION') {
                 return res.status(err.status || 400).json(err);
             }
+            res.status(500).json({ message: 'Server error' });
+        }
+    }
+
+    // GET /api/devices/:id/duc
+    static async revealDeviceDUC(req, res) {
+        const deviceId = req.params.id;
+        const userId = req.user.id;
+
+        try {
+            const deviceRes = await pool.query('SELECT owner_id, current_duc, current_state FROM devices WHERE id = $1', [deviceId]);
+
+            if (deviceRes.rows.length === 0) {
+                return res.status(404).json({ message: 'Device not found' });
+            }
+
+            const device = deviceRes.rows[0];
+
+            // RBAC Check
+            if (device.owner_id !== userId) {
+                return res.status(403).json({ message: 'Unauthorized' });
+            }
+
+            // Logic: Ensure DUC exists
+            let duc = device.current_duc;
+            if (!duc) {
+                // If for some reason it wasn't generated at request time, generate now if state allows
+                if (['RECYCLING_REQUESTED', 'COLLECTOR_ASSIGNED'].includes(device.current_state)) {
+                    duc = crypto.randomInt(100000, 999999).toString();
+                    await pool.query('UPDATE devices SET current_duc = $1 WHERE id = $2', [duc, deviceId]);
+                } else {
+                    return res.status(400).json({ message: 'DUC not available in current state' });
+                }
+            }
+
+            // Audit the reveal
+            await pool.query(
+                `INSERT INTO audit_logs (user_id, action, target_id, details) 
+                 VALUES ($1, 'DUC_REVEAL', $2, $3)`,
+                [userId, deviceId, JSON.stringify({ device_id: deviceId })]
+            );
+
+            res.json({ rawDuc: duc });
+
+        } catch (err) {
+            console.error(err);
             res.status(500).json({ message: 'Server error' });
         }
     }

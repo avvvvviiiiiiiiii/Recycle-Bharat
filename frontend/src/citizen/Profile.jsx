@@ -308,7 +308,7 @@ export default function CitizenProfile() {
                                                     ...profile.preferences,
                                                     settings: { ...profile.preferences.settings, theme: t }
                                                 })}
-                                                className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${profile?.preferences?.settings?.theme === t
+                                                className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${(profile?.preferences?.settings?.theme || 'dark') === t
                                                     ? 'bg-orange-500 text-white shadow-xl shadow-orange-900/20'
                                                     : 'bg-white/5 text-slate-500 hover:text-white'
                                                     }`}
