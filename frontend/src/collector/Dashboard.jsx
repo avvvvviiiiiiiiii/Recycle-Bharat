@@ -33,7 +33,14 @@ const CollectorDashboard = () => {
                         </div>
                     ) : (
                         assignments?.map((task) => (
-                            <AssignmentCard key={task._id} task={task} navigate={navigate} confirmPickup={confirmPickup} isProcessing={isProcessing} />
+                            <AssignmentCard
+                                key={task._id}
+                                task={task}
+                                navigate={navigate}
+                                confirmPickup={confirmPickup}
+                                confirmDelivery={confirmDelivery}
+                                isProcessing={isProcessing}
+                            />
                         ))
                     )}
                 </div>
@@ -77,7 +84,7 @@ const CollectorDashboard = () => {
     );
 };
 
-const AssignmentCard = ({ task, navigate, confirmPickup, isProcessing }) => {
+const AssignmentCard = ({ task, navigate, confirmPickup, confirmDelivery, isProcessing }) => {
     return (
         <div key={task._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col justify-between">
             <div>
@@ -109,7 +116,7 @@ const AssignmentCard = ({ task, navigate, confirmPickup, isProcessing }) => {
                 </div>
             </div>
 
-            {task.status === 'COLLECTOR_ASSIGNED' && (
+            {(task.status === 'COLLECTOR_ASSIGNED' || task.status === 'ASSIGNED') && (
                 <ConfirmWithDuc
                     onConfirm={(duc) => confirmPickup({ assignmentId: task._id, verification_metadata: { duc } })}
                     label="Confirm Pickup"
@@ -167,17 +174,17 @@ const ConfirmWithDuc = ({ onConfirm, label, icon, isProcessing }) => {
     return (
         <form onSubmit={handleSubmit} className="space-y-3 p-3 bg-slate-50 rounded-xl border border-blue-100 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Enter 6-Digit DUC</label>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Citizen Handover Code (DUC)</label>
                 <button type="button" onClick={() => setIsPrompted(false)} className="text-[10px] text-slate-400 hover:text-red-500 font-bold uppercase">Cancel</button>
             </div>
             <div className="relative">
                 <input
-                    type="text"
+                    type="tel"
                     maxLength={6}
                     value={duc}
                     onChange={(e) => setDuc(e.target.value.replace(/\D/g, ''))}
                     placeholder="••••••"
-                    className="w-full bg-white border border-blue-200 rounded-lg px-4 py-2 text-center text-xl font-black tracking-[0.3em] overflow-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                    className="w-full bg-white border border-blue-200 rounded-lg px-4 py-2 text-center text-xl font-black text-slate-900 tracking-[0.3em] overflow-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-300"
                     autoFocus
                 />
             </div>
@@ -196,14 +203,17 @@ const ConfirmWithDuc = ({ onConfirm, label, icon, isProcessing }) => {
 
 const StatusBadge = ({ status }) => {
     const styles = {
+        ASSIGNED: 'bg-indigo-100 text-indigo-700',
         COLLECTOR_ASSIGNED: 'bg-orange-100 text-orange-700',
         COLLECTED: 'bg-purple-100 text-purple-700',
         DELIVERED_TO_RECYCLER: 'bg-blue-100 text-blue-700',
         RECYCLED: 'bg-emerald-100 text-emerald-700',
+        COMPLETED: 'bg-emerald-100 text-emerald-700',
     };
     const labels = {
         DELIVERED_TO_RECYCLER: 'COMPLETED',
-        RECYCLED: 'COMPLETED'
+        RECYCLED: 'COMPLETED',
+        COMPLETED: 'COMPLETED'
     };
     return (
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${styles[status] || 'bg-gray-100'}`}>

@@ -5,20 +5,33 @@ export const useCollector = () => {
     const queryClient = useQueryClient();
 
     // Fetch Assigned Pickups
-    const { data: assignments, isLoading, error } = useQuery({
+    const { data: assignments, isLoading: isAssignmentsLoading, error: assignmentsError } = useQuery({
         queryKey: ['collector-assignments'],
         queryFn: async () => {
             const res = await api.get('/collector/assignments');
             return res.data.map(a => ({
                 _id: a.id,
-                ...a, // Keep other fields
+                ...a,
                 model: a.model,
                 description: `${a.brand} ${a.device_type}`,
-                uid: a.device_type === 'Legacy' ? 'LEGACY' : 'REGULATED', // Mock or real UID
-                // Actually API returns d.device_type, d.brand...
-                // Need to ensure UI gets what it needs.
-                // Dashboard uses: task.model, task.description, task.uid, task.ownerId.email
-                ownerId: { email: a.pickup_address } // Hack to show address where email is expected
+                uid: a.device_uid || 'REGULATED',
+                ownerId: { email: a.pickup_address }
+            }));
+        },
+    });
+
+    // Fetch History
+    const { data: history, isLoading: isHistoryLoading, error: historyError } = useQuery({
+        queryKey: ['collector-history'],
+        queryFn: async () => {
+            const res = await api.get('/collector/history');
+            return res.data.map(a => ({
+                _id: a.id,
+                ...a,
+                model: a.model,
+                uid: a.device_uid || 'REGULATED',
+                currentDuc: a.current_duc,
+                updatedAt: a.actual_pickup_time || new Date().toISOString()
             }));
         },
     });
@@ -30,7 +43,8 @@ export const useCollector = () => {
             return res.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['collector-assignments']);
+            queryClient.invalidateQueries({ queryKey: ['collector-assignments'] });
+            queryClient.invalidateQueries({ queryKey: ['collector-history'] });
         },
     });
 
@@ -41,17 +55,20 @@ export const useCollector = () => {
             return res.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['collector-assignments']);
+            queryClient.invalidateQueries({ queryKey: ['collector-assignments'] });
+            queryClient.invalidateQueries({ queryKey: ['collector-history'] });
         },
     });
 
     return {
-        assignments,
-        isLoading,
-        error,
+        assignments: assignments || [],
+        history: history || [],
+        isLoading: isAssignmentsLoading || isHistoryLoading,
+        isAssignmentsLoading,
+        isHistoryLoading,
+        error: assignmentsError || historyError || null,
         confirmPickup: pickupMutation.mutateAsync,
-        isConfirmingPickup: pickupMutation.isPending,
         confirmDelivery: deliverMutation.mutateAsync,
-        isConfirmingDelivery: deliverMutation.isPending,
+        isProcessing: pickupMutation.isPending || deliverMutation.isPending
     };
 };

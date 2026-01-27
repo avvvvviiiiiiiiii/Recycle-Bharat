@@ -8,6 +8,7 @@ router.use(authenticate);
 
 // Only Collectors can access
 router.get('/assignments', authorize(['COLLECTOR']), CollectorController.getAssignedPickups);
+router.get('/history', authorize(['COLLECTOR']), CollectorController.getPickupHistory);
 router.post('/assignments/:id/pickup', authorize(['COLLECTOR']), CollectorController.confirmPickup);
 router.post('/assignments/:id/deliver', authorize(['COLLECTOR']), CollectorController.confirmDelivery);
 

@@ -68,6 +68,17 @@ export default function RecyclerSettings() {
     const handleSaveField = async (field) => {
         setLoading(true);
         setError('');
+
+        // Validation for License Key
+        if (field === 'license') {
+            const licensePattern = /^EP-VALID-[A-Z0-9]{4}$/;
+            if (!licensePattern.test(formData.organization)) {
+                setError('Invalid format. Please use: EP-VALID-XXXX');
+                setLoading(false);
+                return;
+            }
+        }
+
         try {
             const res = await api.post('/profile/update', formData);
             const updated = res.data;

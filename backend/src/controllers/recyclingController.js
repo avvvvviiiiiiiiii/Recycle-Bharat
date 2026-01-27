@@ -17,38 +17,46 @@ class RecyclingController {
                 ORDER BY rr.created_at ASC`
             );
 
-            // 2. Incoming Deliveries (COLLECTED -> In Transit)
-            // We need to know WHICH collector has it.
-            // Join collector_assignments where status = 'IN_PROGRESS' (picked up)
+            // 2. Incoming Deliveries (COLLECTED -> In Transit to Recycler)
             const deliveries = await pool.query(
-                `SELECT d.*, u.full_name as collector_name, u.email as collector_email, ca.actual_pickup_time as picked_at
+                `SELECT d.id, d.model, d.device_uid, d.brand, d.device_type, d.current_state,
+                        rr.status as req_status,
+                        u.full_name as collector_name, u.email as collector_email, 
+                        ca.actual_pickup_time as picked_at, ca.updated_at as last_update
                 FROM devices d
-                JOIN collector_assignments ca ON ca.request_id = (SELECT id FROM recycling_requests WHERE device_id = d.id LIMIT 1)
-                JOIN users u ON ca.collector_id = u.id
+                JOIN recycling_requests rr ON rr.device_id = d.id
+                LEFT JOIN collector_assignments ca ON ca.request_id = rr.id
+                LEFT JOIN users u ON ca.collector_id = u.id
                 WHERE d.current_state = 'COLLECTED'`
             );
 
-            // 3. Inventory (At Facility)
+            // 3. Inventory (At Facility, Awaiting Final Recycling)
             const inventory = await pool.query(
-                `SELECT d.*, u.full_name as collector_name
+                `SELECT d.id, d.model, d.device_uid, d.brand, d.device_type, d.current_state,
+                        u.full_name as collector_name, u.email as collector_email,
+                        ca.updated_at as received_at
                 FROM devices d
-                JOIN collector_assignments ca ON ca.request_id = (SELECT id FROM recycling_requests WHERE device_id = d.id LIMIT 1)
-                JOIN users u ON ca.collector_id = u.id
+                JOIN recycling_requests rr ON rr.device_id = d.id
+                LEFT JOIN collector_assignments ca ON ca.request_id = rr.id
+                LEFT JOIN users u ON ca.collector_id = u.id
                 WHERE d.current_state = 'DELIVERED_TO_RECYCLER'`
             );
 
-            // 4. Active Dispatches (ASSIGNED but not yet collected)
+            // 4. Active Dispatches (Collector assigned but pickup not yet completed)
             const assigned = await pool.query(
-                `SELECT d.*, u.full_name as collector_name, u.email as collector_email, ca.scheduled_pickup_time, ca.status as assignment_status
+                `SELECT d.id, d.model, d.device_uid, d.brand, d.device_type, d.current_state,
+                        u.full_name as collector_name, u.email as collector_email, 
+                        ca.scheduled_pickup_time, ca.status as assignment_status
                 FROM devices d
-                JOIN collector_assignments ca ON ca.request_id = (SELECT id FROM recycling_requests WHERE device_id = d.id LIMIT 1)
-                JOIN users u ON ca.collector_id = u.id
+                JOIN recycling_requests rr ON rr.device_id = d.id
+                JOIN collector_assignments ca ON ca.request_id = rr.id
+                LEFT JOIN users u ON ca.collector_id = u.id
                 WHERE d.current_state = 'COLLECTOR_ASSIGNED'`
             );
 
             // 5. Active Collectors
             const collectors = await pool.query(
-                `SELECT id, full_name, email FROM users WHERE role = 'COLLECTOR'`
+                `SELECT id, full_name, email, organization FROM users WHERE role = 'COLLECTOR'`
             );
 
             res.json({
@@ -163,22 +171,19 @@ class RecyclingController {
                 { handover_duc: duc }
             );
 
-            // 2. Find and update collector assignment
-            // We need to mark it as COMPLETED when delivered
-            const assignmentRes = await pool.query(
-                `SELECT id FROM collector_assignments 
-                 WHERE request_id = (SELECT id FROM recycling_requests WHERE device_id = $1 LIMIT 1) 
-                 AND status = 'IN_PROGRESS'`,
+            // 2. Mark the Recycling Request itself as COMPLETED
+            await pool.query(
+                `UPDATE recycling_requests SET status = 'COMPLETED', updated_at = NOW() 
+                 WHERE device_id = $1 AND status IN ('COLLECTED', 'DELIVERED')`,
                 [deviceId]
             );
 
-            if (assignmentRes.rows.length > 0) {
-                const assignmentId = assignmentRes.rows[0].id;
-                await pool.query(
-                    "UPDATE collector_assignments SET status = 'COMPLETED' WHERE id = $1",
-                    [assignmentId]
-                );
-            }
+            // 3. Ensure the Collector Assignment is COMPLETED (if not already)
+            await pool.query(
+                `UPDATE collector_assignments SET status = 'COMPLETED', updated_at = NOW() 
+                 WHERE request_id = (SELECT id FROM recycling_requests WHERE device_id = $1 LIMIT 1)`,
+                [deviceId]
+            );
 
             res.json({ message: 'Handover accepted successfully' });
 

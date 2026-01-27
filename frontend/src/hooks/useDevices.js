@@ -71,10 +71,8 @@ export const useDevice = (id) => {
     return useQuery({
         queryKey: ['device', id],
         queryFn: async () => {
-            const res = await api.get('/devices'); // Fetch all and filter (since GET /:id not implemented yet)
-            // Or implement GET /:id api. For now mock filter
-            const device = res.data.find(d => d.id === parseInt(id));
-            if (!device) throw new Error('Device not found');
+            const res = await api.get(`/devices/${id}`);
+            const device = res.data;
 
             return {
                 _id: device.id,
@@ -86,7 +84,8 @@ export const useDevice = (id) => {
                 description: `${device.brand} ${device.device_type}`,
                 purchase_year: device.purchase_year,
                 recycleNumber: device.device_uid_origin === 'MANUFACTURER' ? device.device_uid : null,
-                createdAt: device.created_at
+                createdAt: device.created_at,
+                ownerId: device.ownerId // passed from backend
             };
         },
         enabled: !!id

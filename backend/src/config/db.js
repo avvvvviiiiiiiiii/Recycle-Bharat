@@ -3,9 +3,9 @@ require('dotenv').config();
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false // Required for Render hosted database
-    }
+    ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('ssl=true') ? {
+        rejectUnauthorized: false
+    } : false
 });
 
 // Test the connection

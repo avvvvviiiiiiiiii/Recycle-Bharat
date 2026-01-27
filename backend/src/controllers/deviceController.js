@@ -50,6 +50,48 @@ class DeviceController {
         }
     }
 
+    // GET /api/devices/:id
+    static async getDeviceById(req, res) {
+        const deviceId = req.params.id;
+        try {
+            // Get device details with owner info
+            const result = await pool.query(
+                `SELECT d.*, u.email as owner_email 
+                 FROM devices d
+                 JOIN users u ON d.owner_id = u.id
+                 WHERE d.id = $1`,
+                [deviceId]
+            );
+
+            if (result.rows.length === 0) {
+                return res.status(404).json({ message: 'Device not found' });
+            }
+
+            const device = result.rows[0];
+
+            // Access Control
+            const isOwner = device.owner_id === req.user.id;
+            const isRecycler = req.user.role === 'RECYCLER';
+            const isAdmin = req.user.role === 'ADMIN';
+            const isCollector = req.user.role === 'COLLECTOR';
+
+            // Allow if Owner, Admin, Recycler, or Collector (MVP: broad access for operational roles)
+            if (!isOwner && !isRecycler && !isAdmin && !isCollector) {
+                return res.status(403).json({ message: 'Unauthorized access to this device' });
+            }
+
+            // Return safe data
+            res.json({
+                ...device,
+                ownerId: { email: device.owner_email } // Format expected by frontend
+            });
+
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: 'Server error' });
+        }
+    }
+
     // POST /api/devices/:id/recycle
     static async requestRecycling(req, res) {
         const deviceId = req.params.id;

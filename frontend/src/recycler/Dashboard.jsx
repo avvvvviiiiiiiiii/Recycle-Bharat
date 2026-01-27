@@ -6,7 +6,7 @@ import { Loader2, Truck, UserCheck, CheckCircle2, X, Recycle } from 'lucide-reac
 const RecyclerDashboard = () => {
     const navigate = useNavigate();
     const {
-        requests, deliveries, inventory, collectors,
+        requests, deliveries, inventory, collectors, assigned,
         isLoading, error, assignCollector, isAssigning,
         confirmDelivery, isDelivering, markRecycled, isRecycling
     } = useRecycler();
@@ -62,6 +62,55 @@ const RecyclerDashboard = () => {
                                         isAssigning={isAssigning}
                                         navigate={navigate}
                                     />
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Active Dispatches (Assigned but not yet Collected) */}
+            <div className="space-y-4 pt-8">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Truck className="text-amber-400" /> Active Dispatches (Awaiting Pickup)
+                </h2>
+                <div className="bg-card/30 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+                    <table className="w-full text-left">
+                        <thead className="bg-white/[0.03] border-b border-white/5">
+                            <tr>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Device Identity</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Assigned Logistics Partner</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {(assigned || []).length === 0 ? (
+                                <tr>
+                                    <td colSpan="4" className="p-12 text-center text-slate-600">
+                                        No active disptaches pending pickup.
+                                    </td>
+                                </tr>
+                            ) : (
+                                assigned?.map((dev) => (
+                                    <tr key={dev._id} className="hover:bg-white/[0.02] transition-colors group">
+                                        <td className="p-4">
+                                            <div className="font-medium text-white group-hover:text-amber-400 transition-colors">{dev.model}</div>
+                                            <div className="text-[10px] font-mono text-slate-500 uppercase">{dev.uid}</div>
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="text-sm text-slate-300 font-bold">{dev.collectorId?.displayName}</div>
+                                            <div className="text-[10px] text-slate-500">{dev.collectorId?.email}</div>
+                                        </td>
+                                        <td className="p-4">
+                                            <span className="px-2 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                                                {dev.status}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-right">
+                                            <span className="text-[10px] text-slate-500 italic">Waiting for Partner...</span>
+                                        </td>
+                                    </tr>
                                 ))
                             )}
                         </tbody>
@@ -145,7 +194,7 @@ const RequestRow = ({ req, collectors, onAssign, isAssigning, navigate }) => {
 
     const handleAssign = () => {
         if (!selectedCollector) return alert('Please select a collector first.');
-        onAssign({ deviceId: req._id, collectorId: selectedCollector });
+        onAssign({ requestId: req._id, collectorId: selectedCollector });
     };
 
     return (
@@ -179,10 +228,10 @@ const RequestRow = ({ req, collectors, onAssign, isAssigning, navigate }) => {
                     <button
                         onClick={handleAssign}
                         disabled={!selectedCollector || isAssigning}
-                        className="inline-flex items-center gap-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:bg-slate-800 text-white rounded-lg transition-all text-xs font-bold"
+                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 disabled:from-slate-800 disabled:to-slate-900 text-white rounded-full transition-all text-xs font-black shadow-lg shadow-orange-900/20 active:scale-95 group/dispatch"
                     >
-                        {isAssigning ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
-                        Dispatch Partner
+                        {isAssigning ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} className="group-hover/dispatch:translate-x-1 transition-transform" />}
+                        DISPATCH PARTNER
                     </button>
                 </div>
             </td>
@@ -212,42 +261,56 @@ const DeliveryRow = ({ dev, onConfirm, isDelivering }) => {
                 <div className="text-[10px] font-mono text-slate-500 uppercase">{dev.uid}</div>
             </td>
             <td className="p-4">
-                <div className="text-sm text-slate-300 font-bold">{dev.collectorId?.displayName}</div>
-                <div className="text-[10px] text-slate-500">{dev.collectorId?.email}</div>
+                <div className="text-sm text-slate-300 font-bold">{dev.collectorId?.displayName || 'Logistics Partner'}</div>
+                <div className="text-[10px] text-slate-500">{dev.collectorId?.email || 'verified@logistics.gov'}</div>
             </td>
             <td className="p-4">
-                <div className="text-sm text-slate-400">{new Date(dev.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                <div className="flex items-center gap-2">
+                    <div className="text-sm text-slate-400 font-medium">
+                        {new Date(dev.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                    {dev.status === 'DELIVERED' ? (
+                        <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[8px] font-black rounded-full uppercase tracking-widest animate-pulse">
+                            Reached Facility
+                        </span>
+                    ) : (
+                        <span className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[8px] font-black rounded-full uppercase tracking-widest">
+                            In Transit
+                        </span>
+                    )}
+                </div>
             </td>
             <td className="p-4">
                 <div className="flex justify-end items-center gap-2">
                     {isPrompted ? (
-                        <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-200">
+                        <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
                             <input
                                 type="text"
                                 maxLength={6}
                                 value={duc}
                                 onChange={(e) => setDuc(e.target.value.replace(/\D/g, ''))}
-                                placeholder="PARTNER DUC"
-                                className="bg-slate-950 border border-orange-500/30 text-[10px] font-black tracking-widest text-orange-400 rounded-lg px-3 py-2 w-32 focus:border-orange-500 outline-none transition-all"
+                                placeholder="ENTER DUC"
+                                className="bg-slate-950 border border-orange-500/50 text-[10px] font-black tracking-[0.2em] text-orange-400 rounded-full px-4 py-2.5 w-32 focus:border-orange-500 outline-none transition-all placeholder:tracking-normal placeholder:font-medium shadow-inner shadow-black"
                                 autoFocus
                             />
                             <button
                                 onClick={handleConfirm}
                                 disabled={isDelivering || duc.length !== 6}
-                                className="bg-orange-600 hover:bg-orange-500 text-white p-2 rounded-lg transition-all disabled:opacity-50 shadow-lg shadow-orange-900/20"
+                                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white p-2.5 rounded-full transition-all disabled:opacity-50 shadow-lg shadow-emerald-900/20 active:scale-95"
+                                title="Confirm Handover"
                             >
-                                {isDelivering ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                                {isDelivering ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={16} />}
                             </button>
-                            <button onClick={() => setIsPrompted(false)} className="text-slate-500 hover:text-white p-1">
-                                <X size={14} />
+                            <button onClick={() => setIsPrompted(false)} className="text-slate-500 hover:text-white p-1.5 transition-colors">
+                                <X size={16} />
                             </button>
                         </div>
                     ) : (
                         <button
                             onClick={() => setIsPrompted(true)}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-orange-500/10 border border-white/5 hover:border-orange-500/30 text-slate-400 hover:text-orange-400 rounded-lg text-xs font-bold transition-all"
+                            className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-full text-xs font-black transition-all shadow-lg shadow-blue-900/20 active:scale-95"
                         >
-                            Accept Handover
+                            VERIFY & ACCEPT
                         </button>
                     )}
                 </div>
@@ -258,6 +321,12 @@ const DeliveryRow = ({ dev, onConfirm, isDelivering }) => {
 };
 
 const InventoryRow = ({ dev, onRecycle, isRecycling }) => {
+    const handleRecycle = () => {
+        if (window.confirm(`Initialize final recycling process for ${dev.model}? This will issue the citizen reward.`)) {
+            onRecycle({ deviceId: dev._id, proofMetadata: { timestamp: new Date(), action: 'FINAL_RECYCLING_INIT' } });
+        }
+    };
+
     return (
         <tr className="hover:bg-white/[0.02] transition-colors group">
             <td className="p-4">
@@ -265,17 +334,17 @@ const InventoryRow = ({ dev, onRecycle, isRecycling }) => {
                 <div className="text-[10px] font-mono text-slate-500">{dev.uid}</div>
             </td>
             <td className="p-4">
-                <div className="text-sm text-slate-300 font-bold">{dev.collectorId?.displayName}</div>
+                <div className="text-sm text-slate-300 font-bold">{dev.collectorId?.displayName || 'Verified Partner'}</div>
                 <div className="text-[10px] text-slate-500 italic">Verified Logistical Link</div>
             </td>
             <td className="p-4">
                 <div className="flex justify-end items-center">
                     <button
-                        onClick={() => onRecycle(dev._id)}
+                        onClick={handleRecycle}
                         disabled={isRecycling}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black transition-all shadow-lg shadow-emerald-900/20 active:scale-95"
+                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-full text-xs font-black transition-all shadow-lg shadow-emerald-900/20 active:scale-95 disabled:opacity-50 group/btn"
                     >
-                        {isRecycling ? <Loader2 size={14} className="animate-spin" /> : <Recycle size={14} />}
+                        {isRecycling ? <Loader2 size={14} className="animate-spin" /> : <Recycle size={14} className="group-hover/btn:rotate-180 transition-transform duration-500" />}
                         INITIALIZE RECYCLING
                     </button>
                 </div>

@@ -25,6 +25,7 @@ export const useRecycler = () => {
                 _id: dev.id,
                 model: dev.model,
                 uid: dev.device_uid,
+                status: dev.req_status, // Include sub-status (e.g., DELIVERED)
                 collectorId: { displayName: dev.collector_name, email: dev.collector_email },
                 updatedAt: dev.picked_at
             }));
@@ -72,7 +73,7 @@ export const useRecycler = () => {
             return res.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['recycler-requests']);
+            queryClient.invalidateQueries(['recycler-dashboard']);
         },
     });
 
