@@ -2,20 +2,28 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Recycle, ArrowRight } from 'lucide-react';
+import { Recycle, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 import api from '@/services/api';
 
 export default function Register() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({ full_name: '', email: '', password: '', role: 'citizen' });
+    const [formData, setFormData] = useState({ full_name: '', email: '', password: '', confirmPassword: '', role: 'citizen' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleRegister = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match');
+            setLoading(false);
+            return;
+        }
 
         try {
             await api.post('/auth/register', {
@@ -90,18 +98,53 @@ export default function Register() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300 ml-1">Set Password</label>
-                            <Input
-                                type="password"
-                                id="password"
-                                name="password"
-                                autoComplete="new-password"
-                                placeholder="Create a strong password"
-                                className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                required
-                            />
+                            <label htmlFor="password" className="text-sm font-medium text-slate-300 ml-1">Set Password</label>
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    id="password"
+                                    name="password"
+                                    autoComplete="new-password"
+                                    placeholder="Create a strong password"
+                                    className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 pr-10"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 transition-colors"
+                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="confirmPassword" className="text-sm font-medium text-slate-300 ml-1">Confirm Password</label>
+                            <div className="relative">
+                                <Input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    autoComplete="new-password"
+                                    placeholder="Confirm your password"
+                                    className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 pr-10"
+                                    value={formData.confirmPassword}
+                                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 transition-colors"
+                                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                                >
+                                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
                         </div>
 
                         <Button
@@ -119,15 +162,6 @@ export default function Register() {
                             Already have an identity?{' '}
                             <Link to="/login" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
                                 Sign in here
-                            </Link>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <Link to="/register/recycler" className="text-[10px] uppercase tracking-widest font-bold text-slate-500 hover:text-orange-400 transition-colors py-2 px-1 border border-white/5 rounded-lg hover:border-orange-500/20">
-                                Register Facility
-                            </Link>
-                            <Link to="/register/collector" className="text-[10px] uppercase tracking-widest font-bold text-slate-500 hover:text-blue-400 transition-colors py-2 px-1 border border-white/5 rounded-lg hover:border-blue-500/20">
-                                Register Agent
                             </Link>
                         </div>
                     </div>

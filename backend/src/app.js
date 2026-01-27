@@ -4,6 +4,8 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
+
+// Enforce restart to pick up authController changes
 const app = express();
 
 // Explicit CORS to prevent any blocking (MUST BE FIRST)

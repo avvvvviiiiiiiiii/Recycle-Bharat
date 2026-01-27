@@ -1,11 +1,13 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Factory, Inbox, Truck, History, LogOut, Settings } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Factory, LogOut, Settings, Inbox, Truck, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 
 export default function RecyclerLayout() {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { logout } = useAuth();
     const { user } = useAuth();
 
     const navItems = [
@@ -49,9 +51,15 @@ export default function RecyclerLayout() {
                     <div className="px-3 py-2 text-xs text-muted-foreground mb-1">
                         Status: <span className="text-emerald-400 font-medium">Operational</span>
                     </div>
-                    <Link to="/login" className="flex items-center gap-3 px-3 py-2 text-sm text-destructive/80 hover:text-destructive transition-colors">
+                    <button
+                        onClick={() => {
+                            logout();
+                            navigate('/login');
+                        }}
+                        className="flex items-center gap-3 px-3 py-2 text-sm text-destructive/80 hover:text-destructive transition-colors w-full"
+                    >
                         <LogOut className="w-4 h-4" /> Sign Out
-                    </Link>
+                    </button>
                 </div>
             </aside>
 

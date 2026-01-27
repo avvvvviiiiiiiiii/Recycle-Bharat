@@ -1,13 +1,19 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Truck, CheckSquare, LogOut, User, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 import { useAuth } from '@/context/AuthContext';
 
 export default function CollectorLayout() {
     const location = useLocation();
+<<<<<<< HEAD
     const { user } = useAuth();
+=======
+    const navigate = useNavigate();
+    const { logout } = useAuth();
+>>>>>>> e5d569aec5cf6c7f8748827df255ebd32c84374f
 
     const navItems = [
         { label: 'Assigned Pickups', icon: Truck, path: '/collector/dashboard' },
@@ -48,9 +54,15 @@ export default function CollectorLayout() {
                     <div className="px-3 py-2 text-sm text-white mb-1 font-medium">
                         Agent: {user?.full_name || user?.displayName || 'Unknown Agent'}
                     </div>
-                    <Link to="/login" className="flex items-center gap-3 px-3 py-2 text-sm text-destructive/80 hover:text-destructive transition-colors">
+                    <button
+                        onClick={() => {
+                            logout();
+                            navigate('/login');
+                        }}
+                        className="flex items-center gap-3 px-3 py-2 text-sm text-destructive/80 hover:text-destructive transition-colors w-full"
+                    >
                         <LogOut className="w-4 h-4" /> Sign Out
-                    </Link>
+                    </button>
                 </div>
             </aside>
 
