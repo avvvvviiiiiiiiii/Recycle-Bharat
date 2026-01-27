@@ -3,10 +3,13 @@ import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './auth/Login'; // Landing page with role cards
-import RoleLogin from './pages/auth/Login'; // Role-specific login page
+import RoleLogin from './auth/Login'; // Role-specific login page
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import Register from './auth/Register';
 import RecyclerRegister from './auth/RecyclerRegister';
 import CollectorRegister from './auth/CollectorRegister';
+import GovernmentRegister from './auth/GovernmentRegister';
 
 // Citizen Components
 import CitizenLayout from './citizen/Layout';
@@ -57,6 +60,9 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/register/recycler" element={<RecyclerRegister />} />
                 <Route path="/register/collector" element={<CollectorRegister />} />
+                <Route path="/register/government" element={<GovernmentRegister />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
 
                 {/* Citizen Routes */}
                 <Route path="/citizen" element={

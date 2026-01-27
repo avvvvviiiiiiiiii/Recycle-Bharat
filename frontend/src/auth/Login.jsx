@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Recycle, Truck, Factory, Building2, User, Leaf, ArrowLeft, Sun, Moon, Globe } from 'lucide-react';
+import { Recycle, Truck, Factory, Building2, User, Leaf, ArrowLeft, Sun, Moon, Globe, X, Code, Github, Linkedin, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import api from '@/api/axios';
@@ -17,6 +17,7 @@ import appLogo from '@/applogo.png';
 
 export default function Login() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { login } = useAuth();
     const { language, setLanguage, t } = useLanguage();
 
@@ -27,12 +28,14 @@ export default function Login() {
     // Theme state
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+    const [showAboutModal, setShowAboutModal] = useState(false);
 
     // Login state
     const [selectedRole, setSelectedRole] = useState(null);
     const [formData, setFormData] = useState({ identifier: '', password: '' });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     // Stats state
     const [stats, setStats] = useState([
@@ -46,6 +49,13 @@ export default function Login() {
         { code: 'en', name: 'English', nativeName: 'English' },
         { code: 'hi', name: 'Hindi', nativeName: 'हिंदी' },
         { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ' },
+    ];
+
+    const developers = [
+        { name: 'Shubham Singh' },
+        { name: 'Abhinab Jana' },
+        { name: 'Manjot Singh' },
+        { name: 'Abhishek Chaturvedi' },
     ];
 
     // Auto-rotate carousel
@@ -83,12 +93,30 @@ export default function Login() {
         fetchStats();
     }, [language, t]);
 
+    // Read role from URL parameter and auto-select it
+    useEffect(() => {
+        const roleParam = searchParams.get('role');
+        if (roleParam && ['citizen', 'collector', 'recycler', 'government'].includes(roleParam)) {
+            setSelectedRole(roleParam);
+        }
+    }, [searchParams]);
+
     // Scroll to login form when role is selected
     useEffect(() => {
         if (selectedRole) {
-            setTimeout(() => {
-                document.getElementById('login-form-section')?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
+            // Wait for DOM to update, then scroll
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    const formSection = document.getElementById('login-form-section');
+                    if (formSection) {
+                        // Scroll to the top of the form section
+                        window.scrollTo({
+                            top: formSection.offsetTop,
+                            behavior: 'instant'
+                        });
+                    }
+                }, 100);
+            });
         }
     }, [selectedRole]);
 
@@ -107,7 +135,9 @@ export default function Login() {
                 return;
             }
 
-            navigate(`/${userRole}/dashboard`);
+            // Normalize role for navigation (govt -> government)
+            const navigationRole = userRole === 'govt' ? 'government' : userRole;
+            navigate(`/${navigationRole}/dashboard`);
         } catch (err) {
             console.error('Login error:', err);
             setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
@@ -166,8 +196,8 @@ export default function Login() {
             iconBg: 'bg-purple-100',
             iconColor: 'text-purple-600',
             borderColor: 'border-purple-600',
-            registerPath: '/register',
-            registerLabel: t.contactAdmin
+            registerPath: '/register/government',
+            registerLabel: t.registerGovernment || t.contactAdmin
         },
     ];
 
@@ -196,7 +226,10 @@ export default function Login() {
                             <button className={`text-base font-semibold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'} border-b-2 border-emerald-600 pb-1`}>
                                 {t.home}
                             </button>
-                            <button className={`text-base font-medium ${isDarkMode ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'} transition-colors`}>
+                            <button
+                                onClick={() => setShowAboutModal(true)}
+                                className={`text-base font-medium ${isDarkMode ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'} transition-colors`}
+                            >
                                 {t.about}
                             </button>
                             <button className={`text-base font-medium ${isDarkMode ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'} transition-colors`}>
@@ -238,8 +271,8 @@ export default function Login() {
                                                     setShowLanguageMenu(false);
                                                 }}
                                                 className={`w-full text-left px-4 py-2 text-sm ${language === lang.code
-                                                        ? isDarkMode ? 'bg-emerald-900 text-emerald-300' : 'bg-emerald-50 text-emerald-700'
-                                                        : isDarkMode ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
+                                                    ? isDarkMode ? 'bg-emerald-900 text-emerald-300' : 'bg-emerald-50 text-emerald-700'
+                                                    : isDarkMode ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'
                                                     } transition-colors`}
                                             >
                                                 {lang.nativeName}
@@ -252,6 +285,58 @@ export default function Login() {
                     </div>
                 </div>
             </nav>
+
+            {/* About Us Modal */}
+            {showAboutModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className={`relative max-w-2xl w-full ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} rounded-2xl shadow-2xl border p-8 max-h-[90vh] overflow-y-auto`}>
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setShowAboutModal(false)}
+                            className={`absolute top-4 right-4 p-2 rounded-lg ${isDarkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-600'} transition-colors`}
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        {/* Header */}
+                        <div className="text-center mb-8">
+                            <h2 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'} mb-2`}>About RecycleBharat</h2>
+                            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>National E-Waste Management Portal</p>
+                        </div>
+
+                        {/* Mission */}
+                        <div className="mb-8">
+                            <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'} mb-3`}>Our Mission</h3>
+                            <p className={`${isDarkMode ? 'text-slate-300' : 'text-slate-700'} leading-relaxed`}>
+                                RecycleBharat is a comprehensive e-waste management platform designed to streamline the collection,
+                                processing, and recycling of electronic waste across India. We connect citizens, collectors, recyclers,
+                                and government agencies to create a sustainable ecosystem for responsible e-waste disposal.
+                            </p>
+                        </div>
+
+                        {/* Developers */}
+                        <div>
+                            <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'} mb-4`}>Development Team</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {developers.map((dev, idx) => (
+                                    <div key={idx} className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'} border rounded-xl p-4 transition-all hover:shadow-lg`}>
+                                        <div className="flex items-center justify-center">
+                                            <h4 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{dev.name}</h4>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
+                            <p className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                                © 2026 RecycleBharat • Built with ❤️ for a sustainable future
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Hero Section - Background Slideshow with Title */}
             <section className="min-h-[70vh] relative flex items-center justify-center pt-24 pb-8">
@@ -268,7 +353,7 @@ export default function Login() {
                                 alt={`Slide ${index + 1}`}
                                 className="w-full h-full object-cover"
                             />
-                            <div className={`absolute inset-0 ${isDarkMode ? 'bg-gradient-to-b from-slate-900/90 via-slate-800/85 to-slate-900/90' : 'bg-gradient-to-b from-blue-900/85 via-purple-900/80 to-blue-900/85'}`} />
+                            <div className={`absolute inset-0 ${isDarkMode ? 'bg-gradient-to-b from-slate-900/90 via-slate-800/85 to-slate-900/90' : 'bg-gradient-to-b from-green-50/90 via-emerald-100/60 to-green-50/90'}`} />
                         </div>
                     ))}
                 </div>
@@ -279,7 +364,7 @@ export default function Login() {
                     <img src={appLogo} alt="Recycle Bharat Logo" className="w-24 h-24 mx-auto mb-8 drop-shadow-2xl" />
 
                     {/* Main Title */}
-                    <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-white drop-shadow-2xl mb-2">
+                    <h1 className={`text-5xl md:text-6xl font-bold tracking-tight mb-2 transition-colors ${isDarkMode ? 'text-white drop-shadow-2xl' : 'text-emerald-950 drop-shadow-sm'}`}>
                         {language === 'en' ? (
                             <>recycle<span className="font-normal">Bharat</span></>
                         ) : (
@@ -287,11 +372,11 @@ export default function Login() {
                         )}
                     </h1>
 
-                    <p className="text-xl md:text-2xl text-white font-medium mb-2 drop-shadow-lg">
+                    <p className={`text-xl md:text-2xl font-medium mb-2 transition-colors ${isDarkMode ? 'text-white drop-shadow-lg' : 'text-emerald-900'}`}>
                         {t.subtitle}
                     </p>
 
-                    <p className="text-base text-slate-200 drop-shadow">
+                    <p className={`text-base transition-colors ${isDarkMode ? 'text-slate-200 drop-shadow' : 'text-emerald-700'}`}>
                         {t.tagline}
                     </p>
                 </div>
@@ -302,7 +387,9 @@ export default function Login() {
                         <button
                             key={index}
                             onClick={() => setCurrentSlide(index)}
-                            className={`w-2 h-2 rounded-full transition-all ${index === currentSlide ? 'bg-white w-8' : 'bg-white/50 hover:bg-white/75'
+                            className={`w-2 h-2 rounded-full transition-all ${index === currentSlide
+                                ? (isDarkMode ? 'bg-white w-8' : 'bg-emerald-600 w-8')
+                                : (isDarkMode ? 'bg-white/50 hover:bg-white/75' : 'bg-emerald-900/20 hover:bg-emerald-900/40')
                                 }`}
                             aria-label={`Go to slide ${index + 1}`}
                         />
@@ -337,8 +424,8 @@ export default function Login() {
                                 key={role.id}
                                 onClick={() => setSelectedRole(role.id)}
                                 className={`group relative ${isDarkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-5 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl border-4 ${selectedRole === role.id
-                                        ? `${role.borderColor} ring-4 ring-offset-2 ${isDarkMode ? 'ring-offset-slate-900' : 'ring-offset-slate-50'} shadow-2xl scale-105`
-                                        : isDarkMode ? 'border-slate-700 hover:border-slate-600' : 'border-slate-200 hover:border-slate-300'
+                                    ? `${role.borderColor} ring-4 ring-offset-2 ${isDarkMode ? 'ring-offset-slate-900' : 'ring-offset-slate-50'} shadow-2xl scale-105`
+                                    : isDarkMode ? 'border-slate-700 hover:border-slate-600' : 'border-slate-200 hover:border-slate-300'
                                     }`}
                             >
                                 {/* Icon */}
@@ -412,22 +499,36 @@ export default function Login() {
 
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-center ml-1">
-                                        <label className="text-sm font-medium text-slate-300">{t.password}</label>
-                                        <a href="#" className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors">
-                                            {t.forgot}
-                                        </a>
+                                        <label htmlFor="password" className="text-sm font-medium text-slate-300">{t.password}</label>
+                                        <Link
+                                            to={`/forgot-password?role=${selectedRole}`}
+                                            className="group flex items-center gap-1 text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-all duration-200"
+                                        >
+                                            <KeyRound className="w-3 h-3 group-hover:rotate-12 transition-transform duration-200" />
+                                            <span>Forgot Password?</span>
+                                        </Link>
                                     </div>
-                                    <Input
-                                        type="password"
-                                        id="password"
-                                        name="password"
-                                        autoComplete="current-password"
-                                        placeholder="••••••••"
-                                        className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white"
-                                        value={formData.password}
-                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        required
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            id="password"
+                                            name="password"
+                                            autoComplete="current-password"
+                                            placeholder="••••••••"
+                                            className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white pr-10"
+                                            value={formData.password}
+                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 transition-colors"
+                                            aria-label={showPassword ? "Hide password" : "Show password"}
+                                        >
+                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <Button
@@ -452,6 +553,27 @@ export default function Login() {
                     </div>
                 </section>
             )}
+
+            {/* Developer Credits Section */}
+            <section className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'} py-12 border-t transition-colors`}>
+                <div className="max-w-6xl mx-auto px-4">
+                    <div className="text-center mb-8">
+                        <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'} mb-2`}>Developed By</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Meet the team behind RecycleBharat</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                        {developers.map((dev, idx) => (
+                            <div key={idx} className={`${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} border rounded-xl p-6 text-center transition-all hover:shadow-xl hover:scale-105`}>
+                                <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Code className="w-8 h-8 text-white" />
+                                </div>
+                                <h4 className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{dev.name}</h4>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
             {/* Footer */}
             <div className={`${isDarkMode ? 'bg-slate-950' : 'bg-slate-900'} py-6 text-center transition-colors`}>

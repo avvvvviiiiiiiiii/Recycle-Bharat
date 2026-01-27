@@ -12,7 +12,7 @@ export const translations = {
         // Landing Page
         title: 'recycleBharat',
         subtitle: 'National E-Waste Management Portal',
-        tagline: 'Where Government Information Converges',
+        tagline: 'Driving Responsible E-Waste Collection & Awareness',
         selectRole: 'Select Your Role to Continue',
 
         // Stats
@@ -44,6 +44,7 @@ export const translations = {
         createAccount: 'Create Citizen Account',
         registerCollector: 'Register as Collector',
         registerRecycler: 'Register Recycling Facility',
+        registerGovernment: 'Official Registration',
         contactAdmin: 'Contact Administrator',
 
         // Footer
@@ -59,7 +60,7 @@ export const translations = {
         // Landing Page
         title: 'रीसायकल भारत',
         subtitle: 'राष्ट्रीय ई-कचरा प्रबंधन पोर्टल',
-        tagline: 'जहां सरकारी जानकारी एकत्रित होती है',
+        tagline: 'जिम्मेदार ई-कचरा संग्रह और जागरूकता को बढ़ावा देना',
         selectRole: 'जारी रखने के लिए अपनी भूमिका चुनें',
 
         // Stats
@@ -91,6 +92,7 @@ export const translations = {
         createAccount: 'नागरिक खाता बनाएं',
         registerCollector: 'संग्रहकर्ता के रूप में पंजीकरण करें',
         registerRecycler: 'रीसाइक्लिंग सुविधा पंजीकृत करें',
+        registerGovernment: 'आधिकारिक पंजीकरण',
         contactAdmin: 'व्यवस्थापक से संपर्क करें',
 
         // Footer
@@ -106,7 +108,7 @@ export const translations = {
         // Landing Page
         title: 'ਰੀਸਾਈਕਲ ਭਾਰਤ',
         subtitle: 'ਰਾਸ਼ਟਰੀ ਈ-ਕੂੜਾ ਪ੍ਰਬੰਧਨ ਪੋਰਟਲ',
-        tagline: 'ਜਿੱਥੇ ਸਰਕਾਰੀ ਜਾਣਕਾਰੀ ਇਕੱਠੀ ਹੁੰਦੀ ਹੈ',
+        tagline: 'ਜ਼ਿੰਮੇਵਾਰ ਈ-ਕੂੜਾ ਇਕੱਠਾ ਕਰਨਾ ਅਤੇ ਜਾਗਰੂਕਤਾ ਨੂੰ ਅੱਗੇ ਵਧਾਉਣਾ',
         selectRole: 'ਜਾਰੀ ਰੱਖਣ ਲਈ ਆਪਣੀ ਭੂਮਿਕਾ ਚੁਣੋ',
 
         // Stats
@@ -138,6 +140,7 @@ export const translations = {
         createAccount: 'ਨਾਗਰਿਕ ਖਾਤਾ ਬਣਾਓ',
         registerCollector: 'ਸੰਗ੍ਰਹਿਕਰਤਾ ਵਜੋਂ ਰਜਿਸਟਰ ਕਰੋ',
         registerRecycler: 'ਰੀਸਾਈਕਲਿੰਗ ਸਹੂਲਤ ਰਜਿਸਟਰ ਕਰੋ',
+        registerGovernment: 'ਅਧਿਕਾਰਤ ਰਜਿਸਟ੍ਰੇਸ਼ਨ',
         contactAdmin: 'ਪ੍ਰਸ਼ਾਸਕ ਨਾਲ ਸੰਪਰਕ ਕਰੋ',
 
         // Footer

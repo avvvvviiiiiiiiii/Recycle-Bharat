@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { pool } = require('../config/db');
+const emailService = require('../services/emailService');
 
 class AuthController {
 
@@ -17,7 +19,7 @@ class AuthController {
                 return res.status(400).json({ message: 'Missing fields. Received: ' + JSON.stringify(req.body) });
             }
 
-            if (!['CITIZEN', 'COLLECTOR', 'RECYCLER'].includes(role)) {
+            if (!['CITIZEN', 'COLLECTOR', 'RECYCLER', 'GOVT', 'ADMIN'].includes(role)) {
                 console.error('[Auth] Register Validation Failed: Invalid Role', role);
                 return res.status(400).json({ message: 'Invalid role: ' + role });
             }
@@ -89,6 +91,157 @@ class AuthController {
 
         } catch (err) {
             console.error(err);
+            res.status(500).json({ message: 'Server error' });
+        }
+    }
+
+    // POST /api/auth/forgot-password
+    static async requestPasswordReset(req, res) {
+        const { email } = req.body;
+
+        try {
+            if (!email) {
+                return res.status(400).json({ message: 'Email is required' });
+            }
+
+            // Check if user exists
+            const userRes = await pool.query('SELECT id, email, full_name FROM users WHERE email = $1', [email]);
+
+            // Always return success to prevent email enumeration
+            if (userRes.rows.length === 0) {
+                return res.json({
+                    message: 'If an account with that email exists, a password reset link has been sent.'
+                });
+            }
+
+            const user = userRes.rows[0];
+
+            // Generate secure random token
+            const resetToken = crypto.randomBytes(32).toString('hex');
+            const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+            // Token expires in 1 hour
+            const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+            // Delete any existing tokens for this user
+            await pool.query('DELETE FROM password_reset_tokens WHERE user_id = $1', [user.id]);
+
+            // Store hashed token in database
+            await pool.query(
+                'INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
+                [user.id, hashedToken, expiresAt]
+            );
+
+            // Send reset email
+            try {
+                await emailService.sendPasswordResetEmail(user.email, resetToken, user.full_name);
+            } catch (emailError) {
+                console.error('Failed to send reset email:', emailError);
+                // Continue anyway - the token is still valid
+            }
+
+            res.json({
+                message: 'If an account with that email exists, a password reset link has been sent.'
+            });
+
+        } catch (err) {
+            console.error('Password reset request error:', err);
+            res.status(500).json({ message: 'Server error' });
+        }
+    }
+
+    // POST /api/auth/verify-reset-token
+    static async verifyResetToken(req, res) {
+        const { token } = req.body;
+
+        try {
+            if (!token) {
+                return res.status(400).json({ message: 'Token is required' });
+            }
+
+            const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+            const tokenRes = await pool.query(
+                `SELECT prt.*, u.email, u.full_name 
+                 FROM password_reset_tokens prt
+                 JOIN users u ON prt.user_id = u.id
+                 WHERE prt.token = $1 AND prt.used = false AND prt.expires_at > NOW()`,
+                [hashedToken]
+            );
+
+            if (tokenRes.rows.length === 0) {
+                return res.status(400).json({ message: 'Invalid or expired reset token' });
+            }
+
+            res.json({
+                valid: true,
+                email: tokenRes.rows[0].email
+            });
+
+        } catch (err) {
+            console.error('Token verification error:', err);
+            res.status(500).json({ message: 'Server error' });
+        }
+    }
+
+    // POST /api/auth/reset-password
+    static async resetPassword(req, res) {
+        const { token, newPassword } = req.body;
+
+        try {
+            if (!token || !newPassword) {
+                return res.status(400).json({ message: 'Token and new password are required' });
+            }
+
+            if (newPassword.length < 6) {
+                return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+            }
+
+            const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+            // Get token and user info
+            const tokenRes = await pool.query(
+                `SELECT prt.*, u.id as user_id, u.email, u.full_name 
+                 FROM password_reset_tokens prt
+                 JOIN users u ON prt.user_id = u.id
+                 WHERE prt.token = $1 AND prt.used = false AND prt.expires_at > NOW()`,
+                [hashedToken]
+            );
+
+            if (tokenRes.rows.length === 0) {
+                return res.status(400).json({ message: 'Invalid or expired reset token' });
+            }
+
+            const tokenData = tokenRes.rows[0];
+
+            // Hash new password
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+            // Update password
+            await pool.query(
+                'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+                [hashedPassword, tokenData.user_id]
+            );
+
+            // Mark token as used
+            await pool.query(
+                'UPDATE password_reset_tokens SET used = true WHERE id = $1',
+                [tokenData.id]
+            );
+
+            // Send confirmation email
+            try {
+                await emailService.sendPasswordResetConfirmation(tokenData.email, tokenData.full_name);
+            } catch (emailError) {
+                console.error('Failed to send confirmation email:', emailError);
+                // Continue anyway - password was reset successfully
+            }
+
+            res.json({ message: 'Password reset successful. You can now log in with your new password.' });
+
+        } catch (err) {
+            console.error('Password reset error:', err);
             res.status(500).json({ message: 'Server error' });
         }
     }

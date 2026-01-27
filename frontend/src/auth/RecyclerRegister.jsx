@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Factory, ArrowRight, ShieldCheck, Mail, Lock, Building } from 'lucide-react';
+import { Factory, ArrowRight, ShieldCheck, Mail, Lock, Building, Eye, EyeOff } from 'lucide-react';
 import api from '@/services/api';
 
 export default function RecyclerRegister() {
@@ -10,16 +10,25 @@ export default function RecyclerRegister() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        confirmPassword: '',
         facilityName: '',
         licenseNumber: ''
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleRegister = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match');
+            setLoading(false);
+            return;
+        }
 
         try {
             await api.post('/auth/register', {
@@ -102,17 +111,53 @@ export default function RecyclerRegister() {
                         </div>
 
                         <div className="space-y-2 col-span-full">
-                            <label className="text-sm font-medium text-slate-300 ml-1 flex items-center gap-2">
+                            <label htmlFor="password" className="text-sm font-medium text-slate-300 ml-1 flex items-center gap-2">
                                 <Lock className="w-4 h-4 text-orange-400/60" /> Secure Password
                             </label>
-                            <Input
-                                type="password"
-                                placeholder="••••••••"
-                                className="h-12 bg-slate-950/50 border-white/10 focus:border-orange-500/50"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                required
-                            />
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    id="password"
+                                    placeholder="••••••••"
+                                    className="h-12 bg-slate-950/50 border-white/10 focus:border-orange-500/50 pr-12"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-200 transition-colors"
+                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 col-span-full">
+                            <label htmlFor="confirmPassword" className="text-sm font-medium text-slate-300 ml-1 flex items-center gap-2">
+                                <Lock className="w-4 h-4 text-orange-400/60" /> Confirm Password
+                            </label>
+                            <div className="relative">
+                                <Input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    id="confirmPassword"
+                                    placeholder="••••••••"
+                                    className="h-12 bg-slate-950/50 border-white/10 focus:border-orange-500/50 pr-12"
+                                    value={formData.confirmPassword}
+                                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-200 transition-colors"
+                                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                                >
+                                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
                         </div>
 
                         <Button
