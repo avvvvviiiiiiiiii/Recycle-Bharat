@@ -12,7 +12,7 @@ const authMiddleware = (req, res, next) => {
     }
 
     if (!token) {
-        return res.status(401).json({ error: 'No token, authorization denied' });
+        return res.status(401).json({ message: 'No token, authorization denied' });
     }
 
     try {
@@ -20,7 +20,7 @@ const authMiddleware = (req, res, next) => {
         req.user = decoded; // Payload is flat ({ id, role, email }), no .user wrapper
         next();
     } catch (err) {
-        res.status(401).json({ error: 'Token is not valid' });
+        res.status(401).json({ message: 'Token is not valid' });
     }
 };
 

@@ -6,7 +6,7 @@ class AuthController {
 
     // POST /api/auth/register
     static async register(req, res) {
-        const { email, password, role, full_name, phone } = req.body;
+        const { email, password, role, full_name, phone, organization, avatar_url } = req.body;
 
         try {
             console.log('Register request body:', req.body); // Debug log
@@ -31,8 +31,8 @@ class AuthController {
             const hashedPassword = await bcrypt.hash(password, salt);
 
             const newUser = await pool.query(
-                'INSERT INTO users (email, password_hash, role, full_name, phone) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, role, full_name',
-                [email, hashedPassword, role, full_name, phone || null]
+                'INSERT INTO users (email, password_hash, role, full_name, phone, organization, avatar_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, email, role, full_name, organization, avatar_url',
+                [email, hashedPassword, role, full_name, phone || null, organization || null, avatar_url || null]
             );
 
             res.status(201).json({
@@ -81,7 +81,9 @@ class AuthController {
                     id: user.id,
                     email: user.email,
                     role: user.role,
-                    full_name: user.full_name
+                    full_name: user.full_name,
+                    organization: user.organization,
+                    avatar_url: user.avatar_url
                 }
             });
 

@@ -6,7 +6,7 @@ import { Loader2, Truck, UserCheck, CheckCircle2, X, Recycle } from 'lucide-reac
 const RecyclerDashboard = () => {
     const navigate = useNavigate();
     const {
-        requests, assigned, deliveries, inventory, collectors,
+        requests, deliveries, inventory, collectors,
         isLoading, error, assignCollector, isAssigning,
         confirmDelivery, isDelivering, markRecycled, isRecycling
     } = useRecycler();
@@ -20,7 +20,7 @@ const RecyclerDashboard = () => {
                     Recycler Control Center
                 </h1>
                 <div className="px-4 py-1.5 bg-orange-50 text-orange-700 rounded-full text-xs font-bold border border-orange-100 flex items-center gap-2">
-                    <UserCheck size={14} /> {collectors.length} Active Agents Available
+                    <UserCheck size={14} /> {collectors.length} Field Partners Available
                 </div>
             </div>
 
@@ -40,13 +40,14 @@ const RecyclerDashboard = () => {
                             <tr>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Device Identity</th>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Owner</th>
-                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Dispatch Agent</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Admission Date</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Assign Logistics</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {requests?.length === 0 ? (
                                 <tr>
-                                    <td colSpan="3" className="p-16 text-center text-slate-500">
+                                    <td colSpan="4" className="p-16 text-center text-slate-500">
                                         <Truck className="mx-auto mb-4 opacity-10" size={48} />
                                         No pending recycling requests found.
                                     </td>
@@ -71,21 +72,22 @@ const RecyclerDashboard = () => {
             {/* Incoming Deliveries Section */}
             <div className="space-y-4 pt-8">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Truck className="text-orange-400" /> Inbound Logistics (Agents in Transit)
+                    <Truck className="text-orange-400" /> Inbound Logistics (Partners in Transit)
                 </h2>
                 <div className="bg-card/30 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
                     <table className="w-full text-left">
                         <thead className="bg-white/[0.03] border-b border-white/5">
                             <tr>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Device Identity</th>
-                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Agent</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Partner</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Logistics Time</th>
                                 <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Verify Handover</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {(deliveries || []).length === 0 ? (
                                 <tr>
-                                    <td colSpan="3" className="p-12 text-center text-slate-600">
+                                    <td colSpan="4" className="p-12 text-center text-slate-600">
                                         No agents are currently in transit to your facility.
                                     </td>
                                 </tr>
@@ -167,7 +169,7 @@ const RequestRow = ({ req, collectors, onAssign, isAssigning, navigate }) => {
                         onChange={(e) => setSelectedCollector(e.target.value)}
                         className="bg-slate-900 border border-white/10 text-xs text-white rounded-lg px-2 py-1.5 focus:border-orange-500/50 outline-none transition-all"
                     >
-                        <option value="">Select Agent...</option>
+                        <option value="">Select Logistics Partner...</option>
                         {collectors.map(c => (
                             <option key={c._id} value={c._id}>
                                 {c.displayName || c.email} {c.organization ? `(${c.organization})` : ''}
@@ -180,7 +182,7 @@ const RequestRow = ({ req, collectors, onAssign, isAssigning, navigate }) => {
                         className="inline-flex items-center gap-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:bg-slate-800 text-white rounded-lg transition-all text-xs font-bold"
                     >
                         {isAssigning ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
-                        Assign
+                        Dispatch Partner
                     </button>
                 </div>
             </td>
@@ -225,7 +227,7 @@ const DeliveryRow = ({ dev, onConfirm, isDelivering }) => {
                                 maxLength={6}
                                 value={duc}
                                 onChange={(e) => setDuc(e.target.value.replace(/\D/g, ''))}
-                                placeholder="COLLECTOR DUC"
+                                placeholder="PARTNER DUC"
                                 className="bg-slate-950 border border-orange-500/30 text-[10px] font-black tracking-widest text-orange-400 rounded-lg px-3 py-2 w-32 focus:border-orange-500 outline-none transition-all"
                                 autoFocus
                             />
