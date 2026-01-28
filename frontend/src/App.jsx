@@ -38,6 +38,8 @@ import RecyclerSettings from './recycler/Settings';
 // Government Components
 import GovernmentLayout from './government/Layout';
 import GovernmentDashboard from './government/Dashboard';
+import GovernmentReports from './government/Reports';
+import GovernmentProfileSettings from './government/ProfileSettings';
 
 // Admin Components
 import AdminLayout from './admin/Layout';
@@ -116,6 +118,8 @@ function App() {
                     </ProtectedRoute>
                   }>
                     <Route path="dashboard" element={<GovernmentDashboard />} />
+                    <Route path="reports" element={<GovernmentReports />} />
+                    <Route path="profile-settings" element={<GovernmentProfileSettings />} />
                     <Route index element={<Navigate to="dashboard" replace />} />
                   </Route>
 

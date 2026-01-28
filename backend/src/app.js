@@ -48,6 +48,15 @@ app.use('/api/incentives', require('./routes/incentiveRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/audit', require('./routes/auditRoutes'));
 
+// 404 Handler
+app.use((req, res, next) => {
+    console.log(`[404] ${req.method} ${req.path}`);
+    res.status(404).json({
+        error_code: 'NOT_FOUND',
+        message: `Route ${req.method} ${req.path} not found`
+    });
+});
+
 // Error Handling Middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);

@@ -105,6 +105,68 @@ class AnalyticsController {
             res.status(500).json({ message: 'Server error' });
         }
     }
+
+    // GET /api/analytics/reports
+    static async getRecycledReports(req, res) {
+        console.log('[Analytics] Fetching recycled reports...');
+        try {
+            // Fetch devices that are RECYCLED
+            const reportsRes = await pool.query(`
+                SELECT 
+                    d.id, 
+                    d.device_uid, 
+                    d.device_type, 
+                    d.brand, 
+                    d.model, 
+                    d.serial_number, 
+                    u.full_name as owner_name,
+                    u.email as owner_email,
+                    u.phone as owner_phone,
+                    d.created_at as registered_at,
+                    rr.pickup_address,
+                    col.full_name as collector_name
+                FROM devices d
+                JOIN users u ON d.owner_id = u.id
+                LEFT JOIN recycling_requests rr ON rr.device_id = d.id
+                LEFT JOIN collector_assignments ca ON ca.request_id = rr.id
+                LEFT JOIN users col ON ca.collector_id = col.id
+                WHERE d.current_state = 'RECYCLED'
+                ORDER BY d.updated_at DESC
+            `);
+
+            console.log(`[Analytics] Found ${reportsRes.rows.length} recycled devices.`);
+
+            // For each device, fetch its lifecycle events
+            const reports = await Promise.all(reportsRes.rows.map(async (device) => {
+                const eventsRes = await pool.query(`
+                    SELECT 
+                        le.from_state, 
+                        le.to_state, 
+                        le.event_type, 
+                        le.timestamp, 
+                        le.metadata,
+                        u.full_name as triggered_by
+                    FROM lifecycle_events le
+                    LEFT JOIN users u ON le.triggered_by_user_id = u.id
+                    WHERE le.device_id = $1
+                    ORDER BY le.timestamp ASC
+                `, [device.id]);
+
+                return {
+                    ...device,
+                    workflow: eventsRes.rows
+                };
+            }));
+
+            res.json(reports);
+        } catch (err) {
+            console.error('[Analytics Reports] Error:', err);
+            res.status(500).json({
+                message: 'Server error fetching reports',
+                error: err.message
+            });
+        }
+    }
 }
 
 module.exports = AnalyticsController;

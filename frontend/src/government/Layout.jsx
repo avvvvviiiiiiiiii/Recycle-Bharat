@@ -11,9 +11,8 @@ export default function GovernmentLayout() {
 
     const navItems = [
         { label: 'National Overview', icon: Globe, path: '/government/dashboard' },
-        { label: 'Regional Analytics', icon: BarChart3, path: '/government/regional' },
-        { label: 'Compliance Reports', icon: FileText, path: '/government/reports' },
-        { label: 'Policy Settings', icon: Settings, path: '/government/settings' },
+        { label: 'E-waste report', icon: FileText, path: '/government/reports' },
+        { label: 'Profile Settings', icon: Settings, path: '/government/profile-settings' },
     ];
 
     return (
