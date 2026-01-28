@@ -57,7 +57,17 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. Devices Table
+-- 3. Password Reset Tokens Table
+CREATE TABLE password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) NOT NULL,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    used BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Devices Table
 CREATE TABLE devices (
     id SERIAL PRIMARY KEY,
     device_uid UUID UNIQUE NOT NULL DEFAULT uuid_generate_v4(),
@@ -73,7 +83,7 @@ CREATE TABLE devices (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. Recycling Requests Table
+-- 5. Recycling Requests Table
 CREATE TABLE recycling_requests (
     id SERIAL PRIMARY KEY,
     device_id INTEGER REFERENCES devices(id) UNIQUE NOT NULL,
@@ -87,7 +97,7 @@ CREATE TABLE recycling_requests (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 5. Collector Assignments Table
+-- 6. Collector Assignments Table
 CREATE TABLE collector_assignments (
     id SERIAL PRIMARY KEY,
     request_id INTEGER REFERENCES recycling_requests(id) UNIQUE NOT NULL,
@@ -99,7 +109,7 @@ CREATE TABLE collector_assignments (
     notes TEXT
 );
 
--- 6. Lifecycle Events Table (Immutable Audit Log)
+-- 7. Lifecycle Events Table (Immutable Audit Log)
 CREATE TABLE lifecycle_events (
     id SERIAL PRIMARY KEY,
     device_id INTEGER REFERENCES devices(id) NOT NULL,
@@ -126,7 +136,7 @@ BEFORE UPDATE ON lifecycle_events
 FOR EACH ROW
 EXECUTE FUNCTION prevent_updates();
 
--- 7. Incentives Table
+-- 8. Incentives Table
 CREATE TABLE incentives (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) NOT NULL,
@@ -137,7 +147,7 @@ CREATE TABLE incentives (
     issued_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 8. Notifications Table
+-- 9. Notifications Table
 CREATE TABLE notifications (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) NOT NULL,
@@ -149,6 +159,7 @@ CREATE TABLE notifications (
 
 -- Indexes for Performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens ON password_reset_tokens(token);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_devices_uid ON devices(device_uid);
 CREATE INDEX IF NOT EXISTS idx_devices_owner ON devices(owner_id);

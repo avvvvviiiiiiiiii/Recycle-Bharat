@@ -3,10 +3,13 @@ import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './auth/Login'; // Landing page with role cards
-import RoleLogin from './pages/auth/Login'; // Role-specific login page
+import RoleLogin from './auth/Login'; // Role-specific login page
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import Register from './auth/Register';
 import RecyclerRegister from './auth/RecyclerRegister';
 import CollectorRegister from './auth/CollectorRegister';
+import GovernmentRegister from './auth/GovernmentRegister';
 
 // Citizen Components
 import CitizenLayout from './citizen/Layout';
@@ -48,6 +51,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+<<<<<<< HEAD
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
@@ -60,6 +64,22 @@ function App() {
                   <Route path="/register" element={<Register />} />
                   <Route path="/register/recycler" element={<RecyclerRegister />} />
                   <Route path="/register/collector" element={<CollectorRegister />} />
+=======
+      <LanguageProvider>
+        <AuthProvider>
+          <Router>
+            <div className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-emerald-500/30">
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Login />} /> {/* Landing page with role cards */}
+                <Route path="/login" element={<RoleLogin />} /> {/* Role-specific login */}
+                <Route path="/register" element={<Register />} />
+                <Route path="/register/recycler" element={<RecyclerRegister />} />
+                <Route path="/register/collector" element={<CollectorRegister />} />
+                <Route path="/register/government" element={<GovernmentRegister />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+>>>>>>> 3d714c12b898235cfda31654c9f65de1eeddcd4d
 
                   {/* Citizen Routes */}
                   <Route path="/citizen" element={
