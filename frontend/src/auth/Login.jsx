@@ -533,14 +533,14 @@ export default function Login() {
                         }}
                     >
                         {roleCards.map((role) => (
-                            <motion.button
+                            <motion.div
                                 variants={{
                                     hidden: { opacity: 0, y: 30 },
                                     show: { opacity: 1, y: 0 }
                                 }}
                                 key={role.id}
                                 onClick={() => setSelectedRole(role.id)}
-                                className={`group relative flex flex-col ${isDarkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-5 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl ${selectedRole === role.id
+                                className={`group relative flex flex-col ${isDarkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-5 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer ${selectedRole === role.id
                                     ? 'border-transparent' // Border is handled by layoutId
                                     : isDarkMode ? 'border border-slate-700 hover:border-slate-600' : 'border border-slate-200 hover:border-slate-300'
                                     }`}
@@ -591,7 +591,7 @@ export default function Login() {
                                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                     />
                                 )}
-                            </motion.button>
+                            </motion.div>
                         ))}
                     </motion.div>
                 </div>

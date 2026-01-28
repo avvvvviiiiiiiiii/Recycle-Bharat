@@ -28,10 +28,7 @@ const CitizenDashboard = () => {
                 <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className={`flex items-center gap-3 px-4 py-2.5 backdrop-blur-md border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer appearance-none ${theme === 'dark'
-                        ? 'bg-slate-900/40 border-white/10 text-slate-400 hover:bg-white/5'
-                        : 'bg-white border-slate-200 text-slate-600 shadow-sm hover:bg-slate-50'
-                        }`}
+                    className="flex items-center gap-3 px-4 py-2 border rounded-lg transition-all text-xs font-bold uppercase tracking-wider outline-none cursor-pointer appearance-none bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
                 >
                     <option value="en">EN</option>
                     <option value="hi">HI</option>
@@ -41,55 +38,43 @@ const CitizenDashboard = () => {
                 {/* Theme Toggle */}
                 <button
                     onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                    className={`flex items-center gap-3 px-4 py-2.5 backdrop-blur-md border rounded-2xl transition-all group ${theme === 'dark'
-                        ? 'bg-slate-900/40 border-white/10 hover:bg-white/5'
-                        : 'bg-white border-slate-200 shadow-sm hover:bg-slate-50'
-                        }`}
+                    className="flex items-center gap-2 px-4 py-2 border rounded-lg transition-all group bg-white border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700"
                 >
-                    <div className={`p-1.5 rounded-lg ${theme === 'dark' ? 'bg-blue-500/10 text-blue-400' : 'bg-amber-500/10 text-orange-500'}`}>
+                    <div className={`${theme === 'dark' ? 'text-blue-400' : 'text-orange-500'}`}>
                         {theme === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
                     </div>
-                    <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${theme === 'dark'
-                        ? 'text-slate-400 group-hover:text-white'
-                        : 'text-slate-600 group-hover:text-slate-900'
-                        }`}>
-                        {theme === 'dark' ? `${t.visualMode}: ${t.vDark}` : `${t.visualMode}: ${t.vLight}`}
-                    </span>
                 </button>
             </div>
 
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-end border-b pb-6 border-slate-200 dark:border-slate-800">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-black bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent tracking-tight">
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
                         {t.assetLedger}
                     </h1>
-                    <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">{t.inventoryManagement}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{t.inventoryManagement}</p>
                 </div>
                 <button
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-2xl transition-all shadow-xl shadow-emerald-900/10 font-bold cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                    className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-lg transition-colors font-medium text-sm shadow-sm"
                     onClick={() => navigate('/citizen/register')}
                 >
-                    <Plus size={20} /> {t.registerNewAsset}
+                    <Plus size={18} /> {t.registerNewAsset}
                 </button>
             </div>
 
-            <div className="space-y-16">
+            <div className="space-y-12">
                 {/* Section 1: Regulated Unified Assets */}
                 <div className="space-y-6">
-                    <div className="flex items-end justify-between border-b border-white/5 pb-4">
-                        <div className="space-y-1">
-                            <h2 className={`text-xl font-bold flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                                <ShieldCheck className="text-blue-400" size={20} /> {t.regulatedAssets}
-                            </h2>
-                            <p className="text-xs text-slate-500 font-medium tracking-tight">{t.modernDevicesDesc}</p>
-                        </div>
-                        <span className="text-[10px] font-black text-blue-400/50 uppercase tracking-widest">{regulatedDevices.length} {t.tracked}</span>
+                    <div className="flex items-center justify-between">
+                        <h2 className={`text-lg font-bold flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                            <ShieldCheck className="text-blue-500" size={20} /> {t.regulatedAssets}
+                        </h2>
+                        <span className="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">{regulatedDevices.length}</span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {regulatedDevices.length === 0 ? (
-                            <div className="col-span-full py-12 bg-blue-500/5 border border-dashed border-blue-500/10 rounded-[32px] flex flex-col items-center justify-center text-center">
-                                <p className="text-slate-600 text-[10px] font-black uppercase tracking-widest">{t.noRegulatedAssets}</p>
+                            <div className="col-span-full py-12 bg-slate-50 dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-center">
+                                <p className="text-slate-500 text-sm font-medium">{t.noRegulatedAssets}</p>
                             </div>
                         ) : (
                             regulatedDevices.map((device) => (
@@ -101,20 +86,17 @@ const CitizenDashboard = () => {
 
                 {/* Section 2: Legacy E-Waste Items */}
                 <div className="space-y-6">
-                    <div className="flex items-end justify-between border-b border-white/5 pb-4">
-                        <div className="space-y-1">
-                            <h2 className={`text-xl font-bold flex items-center gap-2 border-emerald-500/10 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                                <Recycle className="text-emerald-400" size={20} /> {t.legacyItems}
-                            </h2>
-                            <p className="text-xs text-slate-500 font-medium tracking-tight">{t.legacyItemsDesc}</p>
-                        </div>
-                        <span className="text-[10px] font-black text-emerald-400/50 uppercase tracking-widest">{legacyDevices.length} {t.registered}</span>
+                    <div className="flex items-center justify-between">
+                        <h2 className={`text-lg font-bold flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                            <Recycle className="text-emerald-500" size={20} /> {t.legacyItems}
+                        </h2>
+                        <span className="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">{legacyDevices.length}</span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {legacyDevices.length === 0 ? (
-                            <div className="col-span-full py-12 bg-emerald-500/5 border border-dashed border-emerald-500/10 rounded-[32px] flex flex-col items-center justify-center text-center">
-                                <p className="text-slate-600 text-[10px] font-black uppercase tracking-widest">{t.noLegacyItems}</p>
+                            <div className="col-span-full py-12 bg-slate-50 dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-center">
+                                <p className="text-slate-500 text-sm font-medium">{t.noLegacyItems}</p>
                             </div>
                         ) : (
                             legacyDevices.map((device) => (
@@ -129,65 +111,50 @@ const CitizenDashboard = () => {
 };
 
 const DeviceCard = ({ device, variant, navigate, theme, t }) => {
-    const isBlue = variant === 'blue';
-    const cardAccent = isBlue ? 'blue' : 'emerald';
-
     return (
         <div
             onClick={() => navigate(`/citizen/device/${device._id}`)}
-            className={`group backdrop-blur-xl border rounded-[32px] p-7 flex flex-col justify-between h-full cursor-pointer transition-all duration-300 shadow-2xl hover:-translate-y-1 ${theme === 'dark'
-                ? `bg-slate-900/40 border-white/5 hover:border-${cardAccent}-500/30`
-                : `bg-white/80 border-slate-200 hover:border-${cardAccent}-500/50 shadow-slate-200/50`
-                }`}
+            className="group border rounded-xl p-5 flex flex-col justify-between h-full cursor-pointer transition-all duration-200 hover:shadow-md bg-white border-slate-200 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-800 dark:hover:border-slate-700"
         >
-            <div className="space-y-4">
+            <div className="space-y-3">
                 <div className="flex justify-between items-start">
-                    <div className="flex flex-col gap-2">
-                        <span className={`text-[9px] font-mono px-2 py-1 rounded-md uppercase tracking-wider w-fit ${theme === 'dark' ? 'text-slate-500 bg-white/5' : 'text-slate-500 bg-slate-100 border border-slate-200'
+                    <div className="flex flex-col gap-1.5">
+                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border uppercase w-fit ${theme === 'dark' ? 'text-slate-400 border-slate-700 bg-slate-800' : 'text-slate-500 border-slate-200 bg-slate-50'
                             }`}>
                             {device.uid}
                         </span>
                         {device.recycleNumber && (
-                            <div className="flex items-center gap-1.5 bg-blue-500/10 px-2 py-1 rounded-lg border border-blue-500/20 w-fit">
-                                <ShieldCheck size={10} className="text-blue-400" />
-                                <span className="text-[9px] font-black text-blue-400 uppercase">ID: {device.recycleNumber}</span>
+                            <div className="flex items-center gap-1">
+                                <ShieldCheck size={12} className="text-blue-500" />
+                                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">ID: {device.recycleNumber}</span>
                             </div>
                         )}
                     </div>
                     <StatusBadge status={device.status} t={t} />
                 </div>
                 <div>
-                    <h3 className={`text-xl font-bold mb-2 group-hover:text-${cardAccent}-400 transition-colors ${theme === 'dark' ? 'text-white' : 'text-slate-900'
+                    <h3 className={`text-lg font-bold mb-1 leading-tight group-hover:text-emerald-600 transition-colors ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
                         }`}>
                         {device.model}
                     </h3>
-                    <p className={`text-xs line-clamp-2 leading-relaxed font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                    <p className={`text-xs line-clamp-2 leading-relaxed ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
                         }`}>
                         {device.description}
                     </p>
                 </div>
             </div>
 
-            <div className={`mt-8 pt-6 border-t space-y-4 ${theme === 'dark' ? 'border-white/5' : 'border-slate-100'}`}>
-                {device.currentDuc && !device.isTerminated && (
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-3 flex justify-between items-center group/duc transition-all hover:bg-emerald-500/20">
-                        <div>
-                            <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">{t.handoverCode}</p>
-                            <p className={`text-xl font-black tracking-[0.3em] font-mono leading-none mt-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'
-                                }`}>
-                                {device.currentDuc}
-                            </p>
-                        </div>
-                        <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400 group-hover/duc:scale-110 transition-transform">
-                            <ShieldCheck size={16} />
-                        </div>
+            <div className={`mt-6 pt-4 border-t flex justify-between items-center ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
+                {device.currentDuc && !device.isTerminated ? (
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">{t.handoverCode}:</span>
+                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{device.currentDuc}</span>
                     </div>
-                )}
-                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500">
-                    <span className={`group-hover:text-${cardAccent}-400 transition-colors flex items-center gap-2`}>
-                        {device.isTerminated ? t.lifecycleArchive : t.deviceDetails}
-                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                    </span>
+                ) : <span></span>}
+
+                <div className="flex items-center gap-1 text-[10px] font-bold uppercase text-slate-400 group-hover:text-emerald-600 transition-colors">
+                    {device.isTerminated ? t.lifecycleArchive : t.deviceDetails}
+                    <ArrowRight size={12} />
                 </div>
             </div>
         </div>
@@ -196,12 +163,12 @@ const DeviceCard = ({ device, variant, navigate, theme, t }) => {
 
 const StatusBadge = ({ status, t }) => {
     const colors = {
-        ACTIVE: 'bg-green-100 text-green-700',
-        RECYCLING_REQUESTED: 'bg-blue-100 text-blue-700',
-        COLLECTOR_ASSIGNED: 'bg-yellow-100 text-yellow-700',
-        COLLECTED: 'bg-purple-100 text-purple-700',
-        DELIVERED_TO_RECYCLER: 'bg-orange-100 text-orange-700',
-        RECYCLED: 'bg-emerald-100 text-emerald-700',
+        ACTIVE: 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/50',
+        RECYCLING_REQUESTED: 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/50',
+        COLLECTOR_ASSIGNED: 'bg-yellow-50 text-yellow-700 border-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-900/50',
+        COLLECTED: 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-900/50',
+        DELIVERED_TO_RECYCLER: 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-900/50',
+        RECYCLED: 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
     };
 
     const labels = {
@@ -214,7 +181,7 @@ const StatusBadge = ({ status, t }) => {
     };
 
     return (
-        <span className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-tighter ${colors[status] || 'bg-gray-100/10 text-gray-400'}`}>
+        <span className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide ${colors[status] || 'bg-gray-50 text-gray-500 border-gray-200'}`}>
             {labels[status] || status.replace(/_/g, ' ')}
         </span>
     );

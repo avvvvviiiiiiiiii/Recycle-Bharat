@@ -17,7 +17,7 @@ const RecyclerDashboard = () => {
         <div className="p-6 max-w-7xl mx-auto space-y-12">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-amber-600 bg-clip-text text-transparent">
-                    Recycler Control Center
+                    Recycle Bharat | Facility Operations
                 </h1>
                 <div className="px-4 py-1.5 bg-orange-50 text-orange-700 rounded-full text-xs font-bold border border-orange-100 flex items-center gap-2">
                     <UserCheck size={14} /> {collectors.length} Field Partners Available
@@ -137,6 +137,52 @@ const RecyclerDashboard = () => {
                 </div>
             </div>
 
+            {/* Active Dispatches (Assigned but not yet Picked Up) */}
+            <div className="space-y-4 pt-8">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Truck className="text-blue-400" /> Active Dispatches (Awaiting Pickup)
+                </h2>
+                <div className="bg-card/30 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+                    <table className="w-full text-left">
+                        <thead className="bg-white/[0.03] border-b border-white/5">
+                            <tr>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Device Identity</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Assigned Partner</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {assigned?.length === 0 ? (
+                                <tr>
+                                    <td colSpan="3" className="p-12 text-center text-slate-600">
+                                        No active dispatches waiting for pickup.
+                                    </td>
+                                </tr>
+                            ) : (
+                                assigned.map((dev) => (
+                                    <tr key={dev._id} className="hover:bg-white/[0.02] transition-colors">
+                                        <td className="p-4">
+                                            <div className="font-medium text-white">{dev.model}</div>
+                                            <div className="text-[10px] font-mono text-slate-500">{dev.uid}</div>
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="text-sm text-slate-300 font-bold">{dev.collectorId?.displayName}</div>
+                                            <div className="text-[10px] text-slate-500">{dev.collectorId?.email}</div>
+                                        </td>
+                                        <td className="p-4">
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wide">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                                Waiting for Pickup
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             {/* Recycled Ledger Section */}
             <div className="space-y-4 pt-8 pb-12">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -180,7 +226,12 @@ const RequestRow = ({ req, collectors, onAssign, isAssigning, navigate }) => {
 
     const handleAssign = () => {
         if (!selectedCollector) return alert('Please select a collector first.');
-        onAssign({ deviceId: req._id, collectorId: selectedCollector });
+        // Fixed: Pass 'requestId' (not deviceId) and 'scheduledTime' to match useRecycler signature
+        onAssign({
+            requestId: req._id,
+            collectorId: selectedCollector,
+            scheduledTime: new Date().toISOString() // Default to immediate dispatch
+        });
     };
 
     return (

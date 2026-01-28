@@ -67,7 +67,7 @@ export default function Register() {
                                 name="full_name"
                                 autoComplete="name"
                                 placeholder="John Doe"
-                                className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50"
+                                className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 text-white"
                                 value={formData.full_name}
                                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                                 required
@@ -81,7 +81,7 @@ export default function Register() {
                                 name="email"
                                 autoComplete="username"
                                 placeholder="john@example.com"
-                                className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50"
+                                className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 text-white"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 required
@@ -97,7 +97,7 @@ export default function Register() {
                                     name="password"
                                     autoComplete="new-password"
                                     placeholder="Create a strong password"
-                                    className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 pr-10"
+                                    className="bg-slate-950/50 border-white/10 focus:border-emerald-500/50 pr-10 text-white"
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     required

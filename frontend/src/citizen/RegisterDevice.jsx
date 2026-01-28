@@ -31,29 +31,29 @@ const RegisterDevice = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto p-8 bg-white rounded-xl shadow-sm border border-gray-100 mt-10">
+        <div className="max-w-md mx-auto p-8 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 mt-10 transition-colors duration-200">
             <button
                 onClick={() => navigate('/citizen')}
-                className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mb-6"
+                className="text-sm text-gray-500 hover:text-gray-800 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-1 mb-6 transition-colors"
             >
                 <ArrowLeft size={16} /> {t.backToDashboard}
             </button>
 
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.registerDevice}</h1>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 transition-colors">{t.registerDevice}</h1>
 
             {error && (
-                <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
+                <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm mb-4 border border-red-100 dark:border-red-900/30">
                     {error}
                 </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label htmlFor="device_type" className="block text-sm font-medium text-gray-700 mb-1">{t.deviceType}</label>
+                    <label htmlFor="device_type" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1 transition-colors">{t.deviceType}</label>
                     <select
                         id="device_type"
                         name="device_type"
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                        className="w-full px-4 py-2 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white outline-none transition-all"
                         value={formData.device_type}
                         onChange={(e) => setFormData({ ...formData, device_type: e.target.value })}
                     >
@@ -67,13 +67,13 @@ const RegisterDevice = () => {
                 </div>
 
                 <div>
-                    <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">{t.brand}</label>
+                    <label htmlFor="brand" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1 transition-colors">{t.brand}</label>
                     <input
                         id="brand"
                         name="brand"
                         type="text"
                         required
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                        className="w-full px-4 py-2 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all"
                         placeholder="e.g. Samsung, Apple, Dell"
                         value={formData.brand}
                         onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
@@ -81,13 +81,13 @@ const RegisterDevice = () => {
                 </div>
 
                 <div>
-                    <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">{t.model}</label>
+                    <label htmlFor="model" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1 transition-colors">{t.model}</label>
                     <input
                         id="model"
                         name="model"
                         type="text"
                         required
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                        className="w-full px-4 py-2 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all"
                         placeholder="e.g. Galaxy S21"
                         value={formData.model}
                         onChange={(e) => setFormData({ ...formData, model: e.target.value })}
@@ -96,23 +96,23 @@ const RegisterDevice = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label htmlFor="purchase_year" className="block text-sm font-medium text-gray-700 mb-1">{t.purchaseYear}</label>
+                        <label htmlFor="purchase_year" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1 transition-colors">{t.purchaseYear}</label>
                         <input
                             id="purchase_year"
                             name="purchase_year"
                             type="number"
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                            className="w-full px-4 py-2 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all"
                             value={formData.purchase_year}
                             onChange={(e) => setFormData({ ...formData, purchase_year: parseInt(e.target.value) })}
                         />
                     </div>
                     <div>
-                        <label htmlFor="serial_number" className="block text-sm font-medium text-gray-700 mb-1">{t.serialNumber}</label>
+                        <label htmlFor="serial_number" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1 transition-colors">{t.serialNumber}</label>
                         <input
                             id="serial_number"
                             name="serial_number"
                             type="text"
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                            className="w-full px-4 py-2 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all"
                             value={formData.serial_number}
                             onChange={(e) => setFormData({ ...formData, serial_number: e.target.value })}
                         />
@@ -122,7 +122,7 @@ const RegisterDevice = () => {
                 <button
                     type="submit"
                     disabled={isRegistering}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg transition-colors flex justify-center items-center gap-2 mt-4"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg transition-colors flex justify-center items-center gap-2 mt-4 shadow-lg shadow-emerald-900/10"
                 >
                     {isRegistering ? <Loader2 className="animate-spin" size={20} /> : t.registerDevice}
                 </button>

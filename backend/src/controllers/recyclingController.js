@@ -180,7 +180,7 @@ class RecyclingController {
             const assignmentRes = await pool.query(
                 `SELECT id FROM collector_assignments 
                  WHERE request_id = (SELECT id FROM recycling_requests WHERE device_id = $1 LIMIT 1) 
-                 AND status = 'IN_PROGRESS'`,
+                 AND status = 'COLLECTED'`,
                 [deviceId]
             );
 
@@ -196,7 +196,23 @@ class RecyclingController {
 
         } catch (err) {
             console.error(err);
-            if (err.code === 'FSM_VIOLATION' || err.code === 'RBAC_VIOLATION') {
+
+            // Idempotency Handler for Handover
+            if (err.code === 'FSM_VIOLATION') {
+                try {
+                    // Check if device is already DELIVERED_TO_RECYCLER
+                    const dRes = await pool.query('SELECT current_state FROM devices WHERE id = $1', [deviceId]);
+                    if (dRes.rows.length > 0 && dRes.rows[0].current_state === 'DELIVERED_TO_RECYCLER') {
+                        return res.json({ message: 'Handover already accepted (Idempotent)' });
+                    }
+                } catch (retryErr) {
+                    console.error('Handover Idempotency Check Failed:', retryErr);
+                }
+
+                return res.status(err.status || 400).json(err);
+            }
+
+            if (err.code === 'RBAC_VIOLATION') {
                 return res.status(err.status || 400).json(err);
             }
             res.status(500).json({ message: 'Server error' });
