@@ -2,11 +2,7 @@ import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Package, History, Award, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-<<<<<<< HEAD
 import { useLanguage } from '../context/LanguageContext';
-=======
-<<<<<<< HEAD
->>>>>>> 970c278 (mod)
 import { useAuth } from '@/context/AuthContext';
 
 export default function CitizenLayout() {
@@ -14,13 +10,6 @@ export default function CitizenLayout() {
     const navigate = useNavigate();
     const { t } = useLanguage();
     const { logout } = useAuth();
-=======
-import { useLanguage } from '../context/LanguageContext';
-
-export default function CitizenLayout() {
-    const location = useLocation();
-    const { t } = useLanguage();
->>>>>>> 0f434a8 (fix citizen)
 
     const navItems = [
         { label: t.myDevices, icon: Package, path: '/citizen/dashboard' },
@@ -61,7 +50,6 @@ export default function CitizenLayout() {
                     <Link to="/citizen/profile" className="flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground mb-1">
                         <User className="w-4 h-4" /> {t.profile}
                     </Link>
-<<<<<<< HEAD
                     <button
                         onClick={() => {
                             logout();
@@ -71,11 +59,6 @@ export default function CitizenLayout() {
                     >
                         <LogOut className="w-4 h-4" /> {t.signOut || "Sign Out"}
                     </button>
-=======
-                    <Link to="/login" className="flex items-center gap-3 px-3 py-2 text-sm text-destructive/80 hover:text-destructive transition-colors">
-                        <LogOut className="w-4 h-4" /> {t.signOut}
-                    </Link>
->>>>>>> 0f434a8 (fix citizen)
                 </div>
             </aside>
 

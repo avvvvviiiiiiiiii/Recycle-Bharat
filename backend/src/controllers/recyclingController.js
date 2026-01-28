@@ -190,55 +190,8 @@ class RecyclingController {
         }
     }
 
-    // POST /api/recycling/devices/:id/handover
-    static async confirmHandover(req, res) {
-        const deviceId = req.params.id;
-        const { duc } = req.body;
 
-        try {
-            // 1. Optional: Verify DUC if provided (though Lifecycle handled most checks)
-            // For now, let's just perform the transition
-            await LifecycleService.transitionState(
-                deviceId,
-                'DELIVERED_TO_RECYCLER',
-                req.user,
-                { handover_duc: duc }
-            );
 
-            // 2. Issue Reward to Citizen immediately upon reaching facility
-            const deviceRes = await pool.query('SELECT owner_id FROM devices WHERE id = $1', [deviceId]);
-            if (deviceRes.rows.length > 0) {
-                const ownerId = deviceRes.rows[0].owner_id;
-                await IncentiveService.issueReward({ userId: ownerId, deviceId });
-            }
-
-            // 2. Find and update collector assignment
-            // We need to mark it as COMPLETED when delivered
-            const assignmentRes = await pool.query(
-                `SELECT id FROM collector_assignments 
-                 WHERE request_id = (SELECT id FROM recycling_requests WHERE device_id = $1 LIMIT 1) 
-                 AND status = 'IN_PROGRESS'`,
-                [deviceId]
-            );
-
-            if (assignmentRes.rows.length > 0) {
-                const assignmentId = assignmentRes.rows[0].id;
-                await pool.query(
-                    "UPDATE collector_assignments SET status = 'COMPLETED' WHERE id = $1",
-                    [assignmentId]
-                );
-            }
-
-            res.json({ message: 'Handover accepted successfully' });
-
-        } catch (err) {
-            console.error(err);
-            if (err.code === 'FSM_VIOLATION' || err.code === 'RBAC_VIOLATION') {
-                return res.status(err.status || 400).json(err);
-            }
-            res.status(500).json({ message: 'Server error' });
-        }
-    }
 }
 
 module.exports = RecyclingController;

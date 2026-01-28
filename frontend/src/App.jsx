@@ -51,25 +51,6 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-      <LanguageProvider>
-        <AuthProvider>
-          <Router>
-            <div className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-emerald-500/30">
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Login />} /> {/* Landing page with role cards */}
-                <Route path="/login" element={<RoleLogin />} /> {/* Role-specific login */}
-                <Route path="/register" element={<Register />} />
-                <Route path="/register/recycler" element={<RecyclerRegister />} />
-                <Route path="/register/collector" element={<CollectorRegister />} />
-                <Route path="/register/government" element={<GovernmentRegister />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-=======
->>>>>>> 970c278 (mod)
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
@@ -82,13 +63,9 @@ function App() {
                   <Route path="/register" element={<Register />} />
                   <Route path="/register/recycler" element={<RecyclerRegister />} />
                   <Route path="/register/collector" element={<CollectorRegister />} />
-<<<<<<< HEAD
                   <Route path="/register/government" element={<GovernmentRegister />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
-=======
->>>>>>> 0f434a8 (fix citizen)
->>>>>>> 970c278 (mod)
 
                   {/* Citizen Routes */}
                   <Route path="/citizen" element={
