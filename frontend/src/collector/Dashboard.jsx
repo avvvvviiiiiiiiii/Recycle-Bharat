@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCollector } from '../hooks/useCollector';
-import { Loader2, MapPin, PackageCheck, Truck, Eye, History, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext'; // Assuming context is available or fallback
+import { Loader2, MapPin, PackageCheck, Truck, Eye, History, CheckCircle2, ArrowRight, ShieldCheck, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const CollectorDashboard = () => {
     const navigate = useNavigate();
     const { assignments, history, isLoading, confirmPickup, confirmDelivery, isConfirmingPickup, isConfirmingDelivery } = useCollector();
-    // Use t from context if available, else mocks or simple strings. Collector might not be fully translated yet.
-    // Simplifying for stability first.
+    const { t, language, setLanguage } = useLanguage();
+    const { theme, setTheme } = useTheme();
 
     if (isLoading) return <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950"><Loader2 className="animate-spin text-emerald-600 w-12 h-12" /></div>;
 
@@ -16,13 +17,38 @@ const CollectorDashboard = () => {
 
     return (
         <div className="p-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
-            {/* Header */}
-            <div className="space-y-1 border-b border-slate-200 dark:border-slate-800 pb-6">
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-                    <Truck className="text-emerald-600" size={32} />
-                    Recycle Bharat <span className="text-slate-400 dark:text-slate-600">|</span> Logistics
-                </h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Manage pending pickups and facility handovers.</p>
+            {/* Header with Controls */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 dark:border-slate-800 pb-6 gap-4">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+                        <Truck className="text-emerald-600" size={32} />
+                        Recycle Bharat <span className="text-slate-400 dark:text-slate-600">|</span> Logistics
+                    </h1>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Manage pending pickups and facility handovers.</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    {/* Language Switcher */}
+                    <select
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value)}
+                        className="flex items-center gap-3 px-4 py-2 border rounded-lg transition-all text-xs font-bold uppercase tracking-wider outline-none cursor-pointer appearance-none bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                    >
+                        <option value="en">EN</option>
+                        <option value="hi">HI</option>
+                        <option value="pa">PA</option>
+                    </select>
+
+                    {/* Theme Toggle */}
+                    <button
+                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                        className="flex items-center gap-2 px-4 py-2 border rounded-lg transition-all group bg-white border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700"
+                    >
+                        <div className={`${theme === 'dark' ? 'text-blue-400' : 'text-orange-500'}`}>
+                            {theme === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
+                        </div>
+                    </button>
+                </div>
             </div>
 
             {/* Assignments Grid */}
