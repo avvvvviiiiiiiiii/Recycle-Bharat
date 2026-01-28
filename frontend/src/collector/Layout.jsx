@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 export default function CollectorLayout() {
     const location = useLocation();
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
 
     const navItems = [
         { label: 'Assigned Pickups', icon: Truck, path: '/collector/dashboard' },
@@ -46,7 +46,7 @@ export default function CollectorLayout() {
 
                 <div className="p-4 border-t border-border">
                     <div className="px-3 py-2 text-sm text-white mb-1 font-medium">
-                        Agent: Rajesh Kumar
+                        Agent: {user?.full_name || user?.displayName || user?.email || 'Unknown Agent'}
                     </div>
                     <button
                         onClick={() => {
