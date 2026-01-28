@@ -4,6 +4,7 @@ import { LayoutDashboard, Package, History, Award, LogOut, User } from 'lucide-r
 import { cn } from '@/lib/utils';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
+import logo from '../applogo.png';
 
 export default function CitizenLayout() {
     const location = useLocation();
@@ -22,11 +23,12 @@ export default function CitizenLayout() {
             {/* Sidebar */}
             <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hidden md:flex flex-col">
                 <div className="p-6">
-                    <h2 className="text-xl font-bold text-emerald-800 dark:text-emerald-400 flex items-center gap-2">
-                        <Package className="text-emerald-600" size={24} />
-                        Recycle Bharat
-                    </h2>
-                    <p className="text-xs font-semibold text-slate-500 mt-1 uppercase tracking-wider pl-8">{t.citizenPortal}</p>
+                    <div className="flex items-center gap-3">
+                        <img src={logo} alt="Recycle Bharat" className="h-8 w-auto object-contain" />
+                        <h2 className="text-xl font-bold text-emerald-800 dark:text-emerald-400">
+                            Recycle Bharat
+                        </h2>
+                    </div>
                 </div>
 
                 <nav className="flex-1 px-4 space-y-1">
