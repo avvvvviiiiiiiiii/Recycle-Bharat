@@ -6,12 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function RecyclerLayout() {
     const location = useLocation();
-<<<<<<< HEAD
-=======
     const navigate = useNavigate();
-    const { logout } = useAuth();
->>>>>>> e5d569aec5cf6c7f8748827df255ebd32c84374f
-    const { user } = useAuth();
+    const { logout, user } = useAuth();
 
     const navItems = [
         { label: 'Incoming Requests', icon: Inbox, path: '/recycler/dashboard' },
