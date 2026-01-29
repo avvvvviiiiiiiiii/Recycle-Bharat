@@ -18,12 +18,12 @@ export default function CollectorLayout() {
     return (
         <div className="flex h-screen bg-background text-foreground overflow-hidden">
             {/* Sidebar */}
-            <aside className="w-64 border-r border-border bg-card/30 hidden md:flex flex-col">
+            <aside className="w-64 border-r border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 hidden md:flex flex-col shadow-sm z-10">
                 <div className="p-6">
-                    <h2 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
+                    <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 bg-clip-text text-transparent">
                         Collector Portal
                     </h2>
-                    <p className="text-xs text-muted-foreground mt-1">Field Operations</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest font-bold">Field Operations</p>
                 </div>
 
                 <nav className="flex-1 px-4 space-y-2">
@@ -34,8 +34,8 @@ export default function CollectorLayout() {
                             className={cn(
                                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                                 location.pathname === item.path
-                                    ? "bg-blue-500/10 text-blue-400"
-                                    : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                                    ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
                             )}
                         >
                             <item.icon className="w-4 h-4" />
@@ -44,9 +44,9 @@ export default function CollectorLayout() {
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-border">
-                    <div className="px-3 py-2 text-sm text-white mb-1 font-medium">
-                        Agent: {user?.full_name || user?.displayName || user?.email || 'Unknown Agent'}
+                <div className="p-4 border-t border-slate-200 dark:border-white/10">
+                    <div className="px-3 py-2 text-sm text-slate-700 dark:text-white mb-1 font-bold">
+                        {user?.full_name || user?.displayName || user?.email || 'Unknown Agent'}
                     </div>
                     <button
                         onClick={() => {
@@ -61,7 +61,7 @@ export default function CollectorLayout() {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto relative bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/10 via-background to-background">
+            <main className="flex-1 overflow-auto relative bg-slate-50/50 dark:bg-black">
                 {/* Mobile Header */}
                 <header className="h-16 border-b border-border flex items-center px-4 md:hidden bg-background/80 backdrop-blur-md sticky top-0 z-10">
                     <span className="font-bold text-blue-400">Collector Panel</span>

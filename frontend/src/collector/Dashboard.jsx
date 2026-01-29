@@ -16,7 +16,7 @@ const CollectorDashboard = () => {
     const isProcessing = isConfirmingPickup || isConfirmingDelivery;
 
     return (
-        <div className="p-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
+        <div className="p-8 max-w-[1400px] mx-auto space-y-10 animate-in fade-in pb-24">
             {/* Header with Controls */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 dark:border-slate-800 pb-6 gap-4">
                 <div className="space-y-1">
@@ -111,61 +111,72 @@ const CollectorDashboard = () => {
 };
 
 const AssignmentCard = ({ task, navigate, confirmPickup, confirmDelivery, isProcessing }) => {
+    const isCollected = task.status === 'COLLECTED';
+
     return (
-        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 flex flex-col justify-between h-full hover:shadow-md transition-shadow">
+        <div className={`bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm hover:shadow-2xl border border-slate-100 dark:border-slate-800 p-6 flex flex-col justify-between h-full transition-all duration-300 group relative overflow-hidden ${isCollected ? 'hover:shadow-purple-500/10' : 'hover:shadow-orange-500/10'
+            }`}>
+            {/* Top colored line */}
+            <div className={`absolute top-0 left-0 right-0 h-1.5 ${isCollected ? 'bg-gradient-to-r from-purple-500 to-indigo-500' : 'bg-gradient-to-r from-orange-400 to-amber-500'}`} />
+
             <div>
-                <div className="flex justify-between items-start mb-4">
+                <div className="flex justify-between items-start mb-6">
                     <StatusBadge status={task.status} />
                     <button
-                        onClick={() => navigate(`/citizen/device/${task._id}`)} // Assuming consistent route or need collector specific view
-                        className="p-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-emerald-600 rounded-lg transition-colors"
+                        onClick={() => navigate(`/citizen/device/${task._id}`)}
+                        className="w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-emerald-600 rounded-full transition-colors"
                         title="View Details"
                     >
-                        <Eye size={16} />
+                        <Eye size={14} />
                     </button>
                 </div>
 
-                <div className="mb-4">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{task.model}</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{task.description}</p>
-                    <p className="text-xs font-mono text-slate-400 mt-2 py-1 px-2 bg-slate-50 dark:bg-slate-800 rounded inline-block">{task.uid}</p>
+                <div className="mb-6">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{task.model}</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{task.description}</p>
+                    <div className="mt-3 flex items-center gap-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800/50 px-2 py-1 rounded-md">ID: {task.uid}</span>
+                    </div>
                 </div>
 
-                <div className="space-y-3 mb-6 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
+                <div className="space-y-3 mb-8 p-4 bg-slate-50/80 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-white/5">
                     <div className="flex items-start gap-3">
-                        <MapPin size={16} className="mt-0.5 text-emerald-500 shrink-0" />
-                        <div className="min-w-0">
-                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Collection Point</p>
-                            <p className="text-sm font-medium text-slate-800 dark:text-slate-300 break-words">{task.ownerId?.email || 'Unknown Location'}</p>
+                        <div className="p-2 bg-white dark:bg-slate-800 rounded-full shadow-sm text-emerald-500 shrink-0">
+                            <MapPin size={16} />
+                        </div>
+                        <div className="min-w-0 pt-0.5">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Collection Point</p>
+                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200 break-words leading-tight">{task.ownerId?.email || 'Unknown Location'}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Actions */}
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-                {/* Changed condition to 'ASSIGNED' to match DB Schema and User Issue */}
+            <div className="pt-2">
                 {task.status === 'ASSIGNED' && (
                     <ConfirmWithDuc
                         onConfirm={(duc) => confirmPickup({ assignmentId: task._id, verification_metadata: { duc } })}
                         label="Verify & Collect"
                         icon={<PackageCheck size={18} />}
                         isProcessing={isProcessing}
+                        color="emerald"
                     />
                 )}
 
                 {task.status === 'COLLECTED' && (
                     <div className="space-y-3">
-                        <div className="p-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg text-xs font-bold border border-purple-100 dark:border-purple-800 flex items-center gap-2 justify-center">
-                            <Truck size={14} /> In Transit to Recycler
+                        <div className="p-3 bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 rounded-xl text-xs font-bold border border-purple-100 dark:border-purple-500/20 flex items-center gap-2 justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+                            In Transit to Recycler
                         </div>
 
                         <button
                             onClick={() => window.confirm('Confirm delivery to Recycler Facility?') && confirmDelivery(task._id)}
                             disabled={isProcessing}
-                            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-purple-900/20"
+                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:-translate-y-0.5"
                         >
-                            {isProcessing ? <Loader2 size={18} className="animate-spin" /> : <PackageCheck size={18} />}
+                            {isProcessing ? <Loader2 size={18} className="animate-spin" /> : <ShieldCheck size={18} />}
                             Confirm Handover
                         </button>
                     </div>
@@ -175,6 +186,7 @@ const AssignmentCard = ({ task, navigate, confirmPickup, confirmDelivery, isProc
     );
 };
 
+
 const ConfirmWithDuc = ({ onConfirm, label, icon, isProcessing }) => {
     const [duc, setDuc] = useState('');
     const [isPrompted, setIsPrompted] = useState(false);
@@ -183,12 +195,12 @@ const ConfirmWithDuc = ({ onConfirm, label, icon, isProcessing }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        if (duc.length !== 6) return setError('Enter 6-digit code');
+        if (duc.length !== 6) return setError('Input 6-digit DUC');
 
         try {
             await onConfirm(duc);
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed');
+            setError(err.response?.data?.error || 'Verification Failed');
         }
     };
 
@@ -196,7 +208,7 @@ const ConfirmWithDuc = ({ onConfirm, label, icon, isProcessing }) => {
         return (
             <button
                 onClick={() => setIsPrompted(true)}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
+                className="w-full bg-slate-900 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-500/30 hover:-translate-y-0.5 duration-300"
             >
                 {icon} {label}
             </button>
@@ -204,30 +216,30 @@ const ConfirmWithDuc = ({ onConfirm, label, icon, isProcessing }) => {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center">
-                <label className="text-[10px] font-bold text-slate-500 uppercase">Device User Code</label>
-                <button type="button" onClick={() => setIsPrompted(false)} className="text-[10px] text-slate-400 hover:text-red-500 font-bold uppercase">Cancel</button>
+        <form onSubmit={handleSubmit} className="space-y-3 animate-in slide-in-from-bottom-2 fade-in duration-300">
+            <div className="flex justify-between items-center px-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Citizen DUC</label>
+                <button type="button" onClick={() => setIsPrompted(false)} className="text-[10px] text-slate-400 hover:text-red-500 font-bold uppercase transition-colors">Cancel</button>
             </div>
-            <div className="relative">
+            <div className="relative group">
                 <input
                     type="text"
                     maxLength={6}
                     value={duc}
                     onChange={(e) => setDuc(e.target.value.replace(/\D/g, ''))}
                     placeholder="••••••"
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-emerald-200 dark:border-emerald-900 rounded-lg px-2 py-2 text-center text-lg font-mono font-bold tracking-[0.3em] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all dark:text-white"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-emerald-900/50 rounded-xl px-2 py-3 text-center text-xl font-mono font-bold tracking-[0.5em] focus:border-emerald-500 focus:ring-0 text-slate-800 dark:text-white outline-none transition-all placeholder:text-slate-200 dark:placeholder:text-slate-800"
                     autoFocus
                 />
             </div>
-            {error && <p className="text-[10px] text-red-500 font-bold text-center">{error}</p>}
+            {error && <p className="text-[10px] text-red-500 font-bold text-center animate-pulse">{error}</p>}
             <button
                 type="submit"
                 disabled={duc.length !== 6 || isProcessing}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-2"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95"
             >
                 {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <PackageCheck size={16} />}
-                Verify
+                VERIFY & COLLECT
             </button>
         </form>
     );
@@ -235,18 +247,24 @@ const ConfirmWithDuc = ({ onConfirm, label, icon, isProcessing }) => {
 
 const StatusBadge = ({ status }) => {
     const styles = {
-        ASSIGNED: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800',
-        COLLECTOR_ASSIGNED: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800', // Fallback
-        COLLECTED: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800',
-        DELIVERED_TO_RECYCLER: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
-        RECYCLED: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800',
+        ASSIGNED: 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800/50',
+        COLLECTOR_ASSIGNED: 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800/50',
+        COLLECTED: 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/50',
+        DELIVERED_TO_RECYCLER: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50',
+        RECYCLED: 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50',
+    };
+
+    const icons = {
+        ASSIGNED: <PackageCheck size={10} />,
+        COLLECTED: <Truck size={10} />,
     };
 
     // Clean up label
     const label = status.replace(/_/g, ' ');
 
     return (
-        <span className={`text-[10px] font-bold px-2.5 py-1 rounded border uppercase tracking-wider ${styles[status] || 'bg-slate-100 text-slate-500'}`}>
+        <span className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-full border uppercase tracking-widest ${styles[status] || 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+            {icons[status] || <CheckCircle2 size={10} />}
             {label}
         </span>
     );
