@@ -45,6 +45,7 @@ const GovernmentReports = () => {
     const { data: reports, isLoading, isError, error } = useReports();
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedItem, setExpandedItem] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     console.log('[Reports] Data:', reports);
     if (isError) console.error('[Reports] Error:', error);
@@ -55,6 +56,72 @@ const GovernmentReports = () => {
         report.device_uid?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         report.owner_name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const handleExport = async () => {
+        if (!filteredReports || filteredReports.length === 0) {
+            return;
+        }
+
+        setIsExporting(true);
+        // Small delay for UX
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        try {
+            const headers = [
+                'Audit ID',
+                'Device UID',
+                'Brand',
+                'Model',
+                'Serial Number',
+                'Category',
+                'Owner Name',
+                'Owner Contact',
+                'Recycled Date',
+                'Collector',
+                'Audit Trail'
+            ];
+
+            const csvRows = [headers.join(',')];
+
+            filteredReports.forEach(r => {
+                // Get recycled date from last workflow item
+                const lastStep = r.workflow?.length > 0 ? r.workflow[r.workflow.length - 1] : null;
+                const recycledDate = lastStep ? new Date(lastStep.timestamp).toLocaleDateString() : 'N/A';
+
+                // Build Audit Trail String
+                const auditTrail = r.workflow?.map(w => w.to_state).join(' -> ') || 'N/A';
+
+                const row = [
+                    r.id,
+                    `"${r.device_uid || ''}"`,
+                    `"${r.brand || ''}"`,
+                    `"${r.model || ''}"`,
+                    `"${r.serial_number || ''}"`,
+                    `"${r.device_type || ''}"`,
+                    `"${r.owner_name || ''}"`,
+                    `"${r.owner_email || ''}"`,
+                    `"${recycledDate}"`,
+                    `"${r.collector_name || 'System Auto-Recycled'}"`,
+                    `"${auditTrail}"`
+                ];
+                csvRows.push(row.join(','));
+            });
+
+            const csvContent = csvRows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `recycle_bharat_audit_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error("Export failed:", error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -94,9 +161,13 @@ const GovernmentReports = () => {
                     <p className="text-muted-foreground mt-1">Detailed lifecycle tracking of successfully recycled electronic assets.</p>
                 </div>
 
-                <button className="flex items-center gap-2 px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-purple-500/20 active:scale-95">
-                    <Download size={18} />
-                    Export Detailed Audit
+                <button
+                    onClick={handleExport}
+                    disabled={isExporting || !filteredReports?.length}
+                    className="flex items-center gap-2 px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-purple-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                    {isExporting ? 'Exporting Audit...' : 'Export Detailed Audit'}
                 </button>
             </div>
 

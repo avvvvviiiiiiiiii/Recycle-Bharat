@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useStats } from '../hooks/useStats';
+import api from '../api/axios';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
     AreaChart, Area, PieChart, Pie, Cell, Legend
@@ -15,6 +16,59 @@ const GovernmentDashboard = () => {
     const [dateRange, setDateRange] = useState('This Year');
     const [region, setRegion] = useState('All Zones');
     const { stats, isLoading } = useStats({ dateRange, region });
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExport = async () => {
+        try {
+            setIsExporting(true);
+            const response = await api.get('/analytics/reports');
+            const data = response.data;
+
+            if (!data || data.length === 0) {
+                alert("No data available to export.");
+                return;
+            }
+
+            // CSV Header
+            const headers = ['ID', 'Device UID', 'Type', 'Brand', 'Model', 'Serial Number', 'Owner Name', 'Owner Email', 'Registered At', 'Collector Name', 'Pickup Address'];
+
+            // CSV Rows
+            const csvRows = [headers.join(',')];
+
+            data.forEach(row => {
+                const values = [
+                    row.id,
+                    `"${row.device_uid || ''}"`,
+                    `"${row.device_type || ''}"`,
+                    `"${row.brand || ''}"`,
+                    `"${row.model || ''}"`,
+                    `"${row.serial_number || ''}"`,
+                    `"${row.owner_name || ''}"`,
+                    `"${row.owner_email || ''}"`,
+                    `"${new Date(row.registered_at).toLocaleDateString()}"`,
+                    `"${row.collector_name || 'Pending'}"`,
+                    `"${row.pickup_address || ''}"`
+                ];
+                csvRows.push(values.join(','));
+            });
+
+            const csvContent = csvRows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `recycle_bharat_report_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error("Export failed:", error);
+            alert("Failed to export report. Please try again.");
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     if (isLoading) return <div className="h-screen flex items-center justify-center bg-slate-50"><Loader2 className="animate-spin text-emerald-600 w-12 h-12" /></div>;
 
@@ -67,8 +121,13 @@ const GovernmentDashboard = () => {
                         </select>
                     </div>
 
-                    <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10">
-                        <Download size={14} /> Export Report
+                    <button
+                        onClick={handleExport}
+                        disabled={isExporting}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                        {isExporting ? 'Exporting...' : 'Export Report'}
                     </button>
                 </div>
             </header>
